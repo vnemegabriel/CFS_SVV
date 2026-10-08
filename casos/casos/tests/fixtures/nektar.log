@@ -1,0 +1,37 @@
+=======================================================================
+	        EquationType: NavierStokesCFE
+	        Session Name: naca0012
+	        Spatial Dim.: 2
+	  Max SEM Exp. Order: 4
+	      Expansion Dim.: 2
+	      Riemann Solver: HLLC
+	      Advection Type: Weak DG
+	      Diffusion Type: Interior Penalty
+	     Projection Type: Discontinuous Galerkin
+	 Advect. advancement: explicit
+	Diffuse. advancement: explicit
+	           Time Step: 2e-07
+	        No. of Steps: 40
+	 Checkpoints (steps): 0
+	  Integration Scheme: RungeKutta
+	   Integration Order: 4
+=======================================================================
+Initial Conditions:
+Writing: "naca0012_0.chk" (0.107788s, XML)
+Steps: 10       Time: 2e-06        CPU Time: 2.00192s
+Steps: 20       Time: 4e-06        CPU Time: 1.90217s
+Steps: 30       Time: 6e-06        CPU Time: 2.06817s
+Steps: 40       Time: 8e-06        CPU Time: 1.79481s
+Time-integration  : 7.76706s
+Writing: "naca0012.fld" (0.302791s, XML)
+-------------------------------------------
+Total Computation Time = 8.35645s
+-------------------------------------------
+L 2 error (variable rho) : 32.567
+L inf error (variable rho) : 2.07526
+L 2 error (variable rhou) : 8863.72
+L inf error (variable rhou) : 363.949
+L 2 error (variable rhov) : 193.413
+L inf error (variable rhov) : 47.5589
+L 2 error (variable E) : 7.94118e+06
+L inf error (variable E) : 540948

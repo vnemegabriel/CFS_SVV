@@ -1,0 +1,2 @@
+/usr/bin/ar qc libsvvhp.a CMakeFiles/svvhp.dir/src/01_DenseMatrix.cpp.o CMakeFiles/svvhp.dir/src/02_Basis1D.cpp.o CMakeFiles/svvhp.dir/src/03_SVV.cpp.o CMakeFiles/svvhp.dir/src/05_CGAssembly.cpp.o CMakeFiles/svvhp.dir/src/07_Output.cpp.o CMakeFiles/svvhp.dir/src/08_Burgers.cpp.o CMakeFiles/svvhp.dir/src/09_CompressibleNS.cpp.o
+/usr/bin/ranlib libsvvhp.a

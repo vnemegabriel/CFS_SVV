@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<NEKTAR>
+	<!-- C[100,101] is my physical surface -->
+	<EXPANSIONS>
+        <E COMPOSITE="C[100,101]" NUMMODES="3" FIELDS="u,v,p" TYPE="MODIFIED" /> 
+    </EXPANSIONS>
+
+    <CONDITIONS>
+
+    	<SOLVERINFO>
+            <I PROPERTY="SolverType"                    VALUE="VelocityCorrectionScheme"/>
+            <I PROPERTY="EQTYPE"                        VALUE="UnsteadyNavierStokes"    />
+            <I PROPERTY="EvolutionOperator"             VALUE="Nonlinear"               />
+            <I PROPERTY="Projection"                    VALUE="Galerkin"                />
+            <I PROPERTY="GlobalSysSoln"                 VALUE="DirectStaticCond"        />
+            <I PROPERTY="TimeIntegrationMethod"         VALUE="IMEXOrder2"              />
+            <I PROPERTY="Driver"                        VALUE="Standard"                />
+            <I PROPERTY="SpectralVanishingViscosity"    VALUE="DGKernel"                />
+            <I PROPERTY="SpectralVanishingViscosityHomo1D"    VALUE="ExpKernel"         />
+	    <I PROPERTY="SPECTRALHPDEALIASING"          VALUE="True"                    />
+	
+       </SOLVERINFO>
+
+       <PARAMETERS>
+	    
+            <P> TimeStep       = 0.025                 </P>
+             <!--  Final time -->
+            <P> FinTime              = 20.0           </P>
+            <P> NumSteps       = FinTime/TimeStep     </P>
+            <P> IO_CheckSteps  = NumSteps/20           </P>
+            <P> IO_InfoSteps   = 1                    </P>
+            <P> IO_FiltersInfoSteps   = 100           </P>
+            <P> IO_CFLSteps    = 10	                  </P>
+             <P> IO_CFLWriteFld = 2.0 		          </P>   
+            <!-- Reynolds number -->
+            <P> Re             = 40                   </P>
+            <P> Kinvis         = 1/Re                 </P>
+            <!-- SVV parameters -->
+	    <P> SVVCutoffRatio = 0.5                      </P> 
+        </PARAMETERS>
+
+
+        <VARIABLES>
+            <V ID="0">u</V>
+            <V ID="1">v</V>
+            <V ID="2">p</V>
+        </VARIABLES>
+
+        <BOUNDARYREGIONS>
+            <B ID="0"> C[5-8] </B>  	<!-- wall     -->
+            <B ID="1"> C[1]   </B>  	<!-- inflow   -->
+            <B ID="2"> C[3]   </B>  	<!-- outflow  -->
+            <B ID="3"> C[2,4] </B>  	<!-- farfield -->      
+        </BOUNDARYREGIONS>
+
+        <BOUNDARYCONDITIONS>
+            <REGION REF="0"> <!-- Wall  -->
+                <D VAR="u" VALUE="0" />
+                <D VAR="v" VALUE="0" />
+               <N VAR="p" VALUE="0" USERDEFINEDTYPE="H" />
+            </REGION>
+            <REGION REF="1"> <!-- inflow   -->
+                <D VAR="u" VALUE="1" />
+                <D VAR="v" VALUE="0" />        
+           	<N VAR="p" VALUE="0" USERDEFINEDTYPE="H" />
+            </REGION>
+            <REGION REF="2"> <!-- outflow  -->
+                <N VAR="u" VALUE="0.0" USERDEFINEDTYPE="HOutflow" />
+                <N VAR="v" VALUE="0.0" USERDEFINEDTYPE="HOutflow" />
+               	<D VAR="p" VALUE="0.0" USERDEFINEDTYPE="HOutflow" />
+            </REGION>
+            <REGION REF="3"> <!-- farfield --> 
+                <D VAR="u" VALUE="1" />
+                <D VAR="v" VALUE="0" />        
+              	<N VAR="p" VALUE="0" USERDEFINEDTYPE="H" />
+            </REGION> 
+                                  
+        </BOUNDARYCONDITIONS>
+
+        <FUNCTION NAME="InitialConditions">
+                 <E VAR="u" VALUE="1" />
+                 <E VAR="v" VALUE="0" />
+                 <E VAR="p" VALUE="0" />
+	</FUNCTION>
+    </CONDITIONS>
+
+    <FILTERS>
+	<FILTER TYPE="AeroForces">
+			<PARAM NAME="OutputFile">DragLift</PARAM>
+            <PARAM NAME="OutputFrequency">  5  </PARAM>
+            <PARAM NAME="Boundary"> B[0] </PARAM>
+        </FILTER>
+	<FILTER TYPE="HistoryPoints">
+		<PARAM NAME="OutputFile">HistoryFields</PARAM>
+		<PARAM NAME="OutputFrequency">5</PARAM>
+		<PARAM NAME="Points"> 5 1 0 </PARAM>
+	</FILTER>
+        <FILTER TYPE="ModalEnergy">
+		<PARAM NAME="OutputFile">EnergyFile</PARAM>	
+		<PARAM NAME="OutputFrequency">10</PARAM>
+	</FILTER>
+    </FILTERS>
+
+  </NEKTER>
+

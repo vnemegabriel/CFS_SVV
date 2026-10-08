@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<NEKTAR>
+    <GEOMETRY DIM="2" SPACE="2">
+        <VERTEX COMPRESSED="B64Z-LittleEndian" BITSIZE="64">eJxtlDtPAkEUhUcFfAG+368Vn/g2sSXbGmLpqjHGUBppaGzN2ln7H4w60ljYaAgmNtYaYmFtY8UvUAfn3GHvrNN8ZM/e4Z4zc1eI4KqWOYVoAD9OPLU+Q3ojGMtrXbrB94RosvZ/3eB6BFzK6eeX39uKFaNHrfqtN67HwD1P19f69R0/Q3qzVf/nZ/3c6C2gn9X1yWKNFZf0Vqv+6J3rbeA1fEd0DkZvt+qRo9HjIM+lavSEVW/rSRB9hc6ng97TvspnWZ5/J3jva/0n7bF8u8B9r/78ySmY/LpBqsM+pr8ekM51Jcf994L8XOv++kCcW8n21w+6z1I+OH5p1+P+BuhH4lYeO4XSgcf9DYrAyqYehbWGwMNNKb+Ub+Rg+humPi+klOre7Xjc3wjvP2P7G+X+XdvfGHil83ORn9HHQeTv0jmSPgEG+86pHEh3wDucG+1D+iRIc4E5MXoK5HNR9zcF4n6H/E2DN3p+3Gie+5sBT/G/8SL3NwsGc39R94D0OZDuHeVI+jxIc4vvl9HTIJ/bur8FEVzVkL9FS+ffUfXds3Q+x0IsWzqfA+XL0vk9EmLV0vk5CLH2f/9G/wW3KRSd</VERTEX>
+        <EDGE COMPRESSED="B64Z-LittleEndian" BITSIZE="64">eJx1k9dSAkEUBcGEmADFnJZoFiOKoGBWjOj//4sv0w921ezLrT41OzvT924q9f9JR+pQpA5HKs+I1sOjER4Ts19G61k3LmZdVsx+E5H3J8W8PxXZb1rr2XdGzL45MfvltZ7vFcR8b1bMfnOh0i/OURRzjnkx/VlQzvkWxfRhSTnnXhbje0U591kV43VNOfdcF+NvQzn33xTjNQkVP3gpifFSFuOpohxfVTGeasrxWBfjaUs5frfFeNpRjvddMZ72lNOPfTH+DkLFD306FNOnhhhPR8rp37EYTyfK6eupGE9nypNQz8V4aipnDi7EeLpUzny0xPi7ChU/zE1bzNx0xHi6Vs483Yjx1FXOnPXEeLpVzvzdiZNQ75Uzlw9iPD0qZ16fxPh7DhU/zPGLmDl+FeOpr5z5fhPj6V05c/8hxtOncv6HLzGevpXznwzEePpRzv/zK8bfHyU6HUQA</EDGE>
+        <ELEMENT>
+            <Q COMPRESSED="B64Z-LittleEndian" BITSIZE="64">eJx10ddOAmEARGGsNGnSpEmzUFRs2As2QLGB7/8u3Jy5cBL25kvOJrs7/wYC/68lXMaVBX0V13Dd7qsHMYRhe656BKO4Ye9Rj2EcE/Y+9SSmcNO+M40ZzKJ2Bq3nMG/fFbK+hQV7Tth6EUsYMdXLWEHtj1rfxipqv86xhnVsoPbHrDdxB7U/bn0X91D7E9b3sYXan7Texg5qf8p6Fw9Q+/WfD/EIe6j9aevHeILan7F+imeo/Vnr59hH7c9Zv8BL1P689Su8Ru3Xed/gLd6h9hes3+MDan/R+iMOUPtL1p/wGbW/bP0FX1H7K9bfcIjar/88wjG+o/ZXrX/gBLW/Zv0Tv1D769a/8Qe1v2H9F6eo/U3rM/xD7Z8DNk8ZlwAA</Q>
+        </ELEMENT>
+        <COMPOSITE>
+            <C ID="1"> Q[0-35] </C>
+            <C ID="100"> E[0,19,32,45,58,71] </C>
+            <C ID="200"> E[72,74,76,78,80,82] </C>
+            <C ID="300"> E[83,70,57,44,31,17] </C>
+            <C ID="400"> E[18,15,12,9,6,3] </C>
+        </COMPOSITE>
+        <DOMAIN> C[1] </DOMAIN>
+    </GEOMETRY>
+    <Metadata>
+        <Provenance>
+            <GitBranch>refs/heads/master</GitBranch>
+            <GitSHA1>9bd3c63b7e30f5f7fd9fddd65eb11b9413df94b4</GitSHA1>
+            <Hostname>ZBOOK</Hostname>
+            <NektarVersion>5.2.0</NektarVersion>
+            <Timestamp>15-Feb-2022 11:13:21</Timestamp>
+        </Provenance>
+        <NekMeshCommandLine>advDiffErr.msh mesh-36elmnt.xml </NekMeshCommandLine>
+    </Metadata>
+    <EXPANSIONS>
+        <E COMPOSITE="C[1]" NUMMODES="4" TYPE="MODIFIED" FIELDS="u" />
+    </EXPANSIONS>
+</NEKTAR>

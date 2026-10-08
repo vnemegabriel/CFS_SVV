@@ -1,0 +1,9 @@
+solver     : NavierStokesCFE
+conditions : conditions.xml
+mesh       : naca0012.xml
+Mach       : 0.8
+alpha      : 1.25 deg
+Reynolds   : 499.99999999999994
+pInf       : 101325
+q_inf      : 45393.60000000003
+generated  : 2026-09-04 09:01

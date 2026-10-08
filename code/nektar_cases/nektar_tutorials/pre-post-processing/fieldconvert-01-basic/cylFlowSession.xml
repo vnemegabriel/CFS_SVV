@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<NEKTAR>
+	<!-- C[100,1013] is the flow domains -->
+	<EXPANSIONS>
+        <E COMPOSITE="C[100,101]" NUMMODES="6" FIELDS="u,v,p" TYPE="MODIFIED" /> 
+    </EXPANSIONS>
+
+    <CONDITIONS>
+
+    	<SOLVERINFO>
+            <I PROPERTY="SolverType"                          VALUE="VelocityCorrectionScheme"/>
+            <I PROPERTY="EQTYPE"                              VALUE="UnsteadyNavierStokes"    />
+            <I PROPERTY="EvolutionOperator"                   VALUE="Nonlinear"               />
+            <I PROPERTY="Projection"                          VALUE="Galerkin"                />
+            <I PROPERTY="GlobalSysSoln"                       VALUE="IterativeStaticCond"     />
+            <I PROPERTY="TimeIntegrationMethod"               VALUE="IMEXOrder2"              />
+            <I PROPERTY="Driver"                              VALUE="Standard"                />
+       </SOLVERINFO>
+
+       <PARAMETERS>
+	    <!-- Need to pick Delta t strategically, dont want CFL number to be too large! -->
+            <P> TimeStep       = 5e-3                </P>
+            <P> NumSteps       = 3000                </P>
+            <P> IO_CheckSteps  = 100                 </P>
+            <P> IO_InfoSteps   = 1                   </P>
+            <P> IO_CFLSteps    = 10	                 </P>
+            <!-- Reynolds number -->
+            <P> Re             = 200               </P>
+            <P> Kinvis         = 1/Re                </P>
+        </PARAMETERS>
+        <VARIABLES>
+            <V ID="0">u</V>
+            <V ID="1">v</V>
+            <V ID="2">p</V>
+        </VARIABLES>
+
+        <BOUNDARYREGIONS>
+            <B ID="0"> C[5-8] </B>  	<!-- wall     -->
+            <B ID="1"> C[1]   </B>  	<!-- inflow   -->
+            <B ID="2"> C[3]   </B>  	<!-- outflow  -->
+            <B ID="3"> C[2,4] </B>  	<!-- farfield -->      
+        </BOUNDARYREGIONS>
+
+        <BOUNDARYCONDITIONS>
+            <REGION REF="0"> <!-- Wall  -->
+                <D VAR="u" VALUE="0" />
+                <D VAR="v" VALUE="0" />
+		<N VAR="p" VALUE="0" USERDEFINEDTYPE="H" />
+            </REGION>
+            <REGION REF="1"> <!-- inflow   -->
+                <D VAR="u" VALUE="1" />
+                <D VAR="v" VALUE="0" />        
+		<N VAR="p" VALUE="0" USERDEFINEDTYPE="H" />
+            </REGION>
+            <REGION REF="2"> <!-- outflow  -->
+                <N VAR="u" VALUE="0.0" USERDEFINEDTYPE="HOutflow" />
+                <N VAR="v" VALUE="0.0" USERDEFINEDTYPE="HOutflow" />
+		<D VAR="p" VALUE="0.0" USERDEFINEDTYPE="HOutflow" />
+            </REGION>
+            <REGION REF="3"> <!-- farfield --> 
+                <D VAR="u" VALUE="1" />
+                <D VAR="v" VALUE="0" />        
+		<N VAR="p" VALUE="0" USERDEFINEDTYPE="H" />
+            </REGION> 
+                                  
+        </BOUNDARYCONDITIONS>
+
+        <FUNCTION NAME="InitialConditions">
+            <F FILE="init.rst" VAR="u,v,p" />
+	</FUNCTION>
+    </CONDITIONS>
+
+    <FILTERS>
+        <FILTER TYPE="AeroForces">
+            <PARAM NAME="OutputFile">DragLift</PARAM>
+            <PARAM NAME="OutputFrequency">  5  </PARAM>
+            <PARAM NAME="Boundary"> B[0] </PARAM>
+        </FILTER>
+    </FILTERS>
+
+
+
+  </NEKTER>
+

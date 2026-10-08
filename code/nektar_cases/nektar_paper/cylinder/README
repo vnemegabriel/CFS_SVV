@@ -1,0 +1,11 @@
+Three-dimensional vortex shedding behind a cylinder
+---------------------------------------------------
+
+In this example, vortex shedding is observed in compressible flow behind a
+cylinder at Reynolds number Re = 3900. The example is large and should be run
+on a parallel machine with sufficient memory and processors.
+
+Please ensure the CMake option NEKTAR_USE_MPI is enabled when compiling
+Nektar++.
+
+   mpirun -n 128 CompressibleFlowSolver Cylinder_NS_3D.xml.gz conditions.xml

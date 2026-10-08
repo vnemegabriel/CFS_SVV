@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<NEKTAR>
+    <Metadata>
+        <Provenance>
+            <GitBranch>refs/heads/master</GitBranch>
+            <GitSHA1>f18731d7f92a6a4c4369b486598558e935c295cd</GitSHA1>
+            <Hostname>nemepad</Hostname>
+            <NektarVersion>5.9.0</NektarVersion>
+            <Timestamp>04-Sep-2026 08:57:53</Timestamp>
+        </Provenance>
+        <ChkFileNum>0</ChkFileNum>
+        <FilterFileNum>0</FilterFileNum>
+        <SessionName0>gen_solver.opt</SessionName0>
+        <SessionName1>gen_solver_xml/P0000000.xml</SessionName1>
+        <Time>0</Time>
+    </Metadata>
+    <Partition FileName="P0000000.fld">4803,4805-4815,4845-4863,4891-4915,4935-4972,4982-5020,5029-5068,5076-5116,5123-5164,5170-5212,5214,5216-9305,18094,18140-18141,18186-18188,18232-18235,18278-18285,18324-18337,18370-18385,18393-18399,18416-18437,18439-18451,18458-18611</Partition>
+    <Partition FileName="P0000001.fld">226-232,266-280,297-328,337-375,377-4802,4804,4816-4844,4864-4890,4916-4934,4973-4981,5021-5028,5069-5075,5117-5122,5165-5169,5213,5215</Partition>
+    <Partition FileName="P0000002.fld">0-225,233-265,281-296,329-336,376,9306-13485,13487-13531,13535-13577,13586-13623,13634-13669,13686-13715,13734-13744,13752-13757,13786</Partition>
+    <Partition FileName="P0000003.fld">13486,13532-13534,13578-13585,13624-13633,13670-13685,13716-13733,13745-13751,13758-13785,13787-18093,18095-18139,18142-18185,18189-18231,18236-18277,18286-18323,18338-18369,18386-18392,18400-18415,18438,18452-18457</Partition>
+</NEKTAR>

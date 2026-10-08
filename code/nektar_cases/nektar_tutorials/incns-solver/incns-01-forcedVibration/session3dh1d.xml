@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<NEKTAR>
+   <EXPANSIONS>
+        <E COMPOSITE="C[73]" NUMMODES="7" TYPE="MODIFIED" FIELDS="u,v,w,p" />
+    </EXPANSIONS>
+    <CONDITIONS>
+        <SOLVERINFO>
+            <I PROPERTY="EQTYPE" VALUE="UnsteadyNavierStokes" />
+            <I PROPERTY="SolverType" VALUE="VCSMapping" />
+            <I PROPERTY="EvolutionOperator" VALUE="Nonlinear" />
+            <I PROPERTY="Projection" VALUE="Galerkin" />
+            <I PROPERTY="GlobalSysSoln" VALUE="XxtMultiLevelStaticCond"/>
+            <I PROPERTY="TimeIntegrationMethod" VALUE="IMEXOrder1" />
+            <I PROPERTY="HOMOGENEOUS" VALUE="1D" />
+        </SOLVERINFO>
+        <PARAMETERS>
+            <P> TimeStep      = 1.0e-5             </P>
+            <P> NumSteps      = 1000000                </P>
+            <P> IO_CheckSteps = 5000                </P>
+            <P> IO_InfoSteps  = 1000               </P>
+            <P> IO_CFLSteps  = 100                </P>
+            <P> Re            = 1000               </P>
+            <P> Kinvis        = 1/Re              </P>
+                        
+            <P> f             = 5           </P> 
+            
+            <P> A             = 0.1               </P>
+            <P> omega         = 2*PI*f               </P>
+            <P> HomModesZ = 24 </P>
+            <P> LZ = 0.2 </P>
+        </PARAMETERS>
+        <VARIABLES>
+            <V ID="0"> u </V>
+            <V ID="1"> v </V>
+            <V ID="2"> w </V>
+            <V ID="3"> p </V>
+        </VARIABLES>
+        <BOUNDARYREGIONS>
+            <B ID="0"> C[74] </B>      <!-- Wall -->
+            <B ID="1"> C[76] </B>      <!-- Far Field -->
+            <B ID="2"> C[77] </B>      <!-- Outflow -->
+            <B ID="3"> C[75] </B>      <!-- Inflow -->
+        </BOUNDARYREGIONS>
+        <BOUNDARYCONDITIONS>
+            <REGION REF="0">
+                <D VAR="u" USERDEFINEDTYPE="MovingBody" VALUE="0" />
+                <D VAR="v" USERDEFINEDTYPE="MovingBody" VALUE="0" />
+                <D VAR="w" VALUE="0" />
+                <N VAR="p" USERDEFINEDTYPE="H" VALUE="0" />
+            </REGION>
+            <REGION REF="1">
+                <D VAR="u" VALUE="1" />
+                <D VAR="v" VALUE="0" />
+                <D VAR="w" VALUE="0" />
+                <N VAR="p" USERDEFINEDTYPE="H" VALUE="0" />
+            </REGION>
+            <REGION REF="2">
+                <N VAR="u" USERDEFINEDTYPE="HOutFlow" VALUE="0" />
+                <N VAR="v" USERDEFINEDTYPE="HOutFlow" VALUE="0" />
+                <N VAR="w" USERDEFINEDTYPE="HOutFlow" VALUE="0" />
+                <D VAR="p" USERDEFINEDTYPE="HOutFlow" VALUE="0" />
+            </REGION>
+            <REGION REF="3">
+                <D VAR="u" VALUE="1" />
+                <D VAR="v" VALUE="0" />
+                <D VAR="w" VALUE="0" />
+                <N VAR="p" USERDEFINEDTYPE="H" VALUE="0" />
+            </REGION>
+        </BOUNDARYCONDITIONS>
+
+        <FUNCTION NAME="Mapping">
+            <E VAR="x" VALUE="x" />
+            <E VAR="y" VALUE="y+A*cos(omega*t)" />
+        </FUNCTION>
+        <FUNCTION NAME="MappingVel">
+            <E VAR="vx" VALUE="0.0" />
+            <E VAR="vy" VALUE="-1.0*omega*A*sin(omega*t)" />
+        </FUNCTION>
+
+        <FUNCTION NAME="InitialConditions">
+            <E VAR="u" VALUE="1.0" />
+            <E VAR="v" VALUE="0.0" />
+            <E VAR="w" VALUE="0.01*awgn(1.0)" />
+            <E VAR="p" VALUE="0.0"/>
+        </FUNCTION>
+    </CONDITIONS>
+    
+    <MAPPING TYPE="Translation">
+        <COORDS>Mapping</COORDS>
+        <VEL>MappingVel</VEL>
+        <TIMEDEPENDENT>True</TIMEDEPENDENT>
+	</MAPPING>
+    
+   <FILTERS>
+       <!--
+       <FILTER TYPE="FieldConvert">
+          <PARAM NAME="OutputFile">MyFile.vtu</PARAM>
+          <PARAM NAME="OutputFrequency">100</PARAM>
+          <PARAM NAME="Modules"> vorticity </PARAM>
+       </FILTER>
+       -->
+       <FILTER TYPE="AeroForces">
+           <PARAM NAME="OutputFile">DragLift</PARAM>
+           <PARAM NAME="OutputFrequency">10</PARAM>
+           <PARAM NAME="Boundary"> B[0] </PARAM>
+       </FILTER>
+   </FILTERS>
+
+</NEKTAR>

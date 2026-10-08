@@ -1,0 +1,2 @@
+/usr/bin/ar qc libpolylib.a CMakeFiles/polylib.dir/extern/polylib/polylib.cpp.o
+/usr/bin/ranlib libpolylib.a

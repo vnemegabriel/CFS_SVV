@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<NEKTAR>
+    <GEOMETRY DIM="2" SPACE="2">
+        <VERTEX COMPRESSED="B64Z-LittleEndian" BITSIZE="64">eJxtkjsSglAMRaPi//+ndgXYy2BhowtxDSzBVbgMG+cNM5Y2LkGWwA4U4eZBgim4xXlJbhKIypFEUolq0Kf3+8YVXoee3ZzvXp803pY3VP3wKrkj6sRR1m8b+sybKj/nF8tb0D36wkfAvK3yMYflHaj0lVjeVfma96DwZeQ7oj70cczmMjwn80G5/GlzJxVD6OGW2vNCP99n4X8k+/va31jOF2h/Eyj2F/AdmU+hDvriPob5DMp75zrM51C598LfQkybVPwtFZf/IdFKcXkHorXicg9E7v/+ln8Bykd3NgAA</VERTEX>
+        <EDGE COMPRESSED="B64Z-LittleEndian" BITSIZE="64">eJx1kEkSglAMBQEVZxxBHEARh/vf0I29oKvyN6l+FUI6STJ8aVCzoI6CyhurH54EnIuZN1U/fTMxfXMx8xbB90sx36+Ceet/5T7MLcTM3Yi5x1Y5/9uJ8d4rZ4+DGL+jcvYrxXhX2p+9T2L2rgOPs3J8LmI8rsrxvInxaJTj34rxu2t/7vIQc5dOjMdTOffqxXi8lHPHtxiPj3Lu+xXj9wOocAa/</EDGE>
+        <ELEMENT>
+            <Q COMPRESSED="B64Z-LittleEndian" BITSIZE="64">eJx10EcOwjAABdFQ0kkPvYTO/W/IZrxgJLx50kSyvxJFv2eGc1z86UuMMdH30FPMMNe9oRdY4krvVFhjo12xeoud7knUexy0N1Ufca29Yf8Gt7jT3lx9jwftLdSPeNLeUv2MF+0N/3HCK960t1K/40N7a/UnvrS3UX/jR3u/iOQFQAAA</Q>
+        </ELEMENT>
+        <COMPOSITE>
+            <C ID="1"> Q[0-15] </C>
+            <C ID="100"> E[0,13,22,31] </C>
+            <C ID="200"> E[32,34,36,38] </C>
+            <C ID="300"> E[39,30,21,11] </C>
+            <C ID="400"> E[12,9,6,3] </C>
+        </COMPOSITE>
+        <DOMAIN> C[1] </DOMAIN>
+    </GEOMETRY>
+    <Metadata>
+        <Provenance>
+            <GitBranch>refs/heads/master</GitBranch>
+            <GitSHA1>9bd3c63b7e30f5f7fd9fddd65eb11b9413df94b4</GitSHA1>
+            <Hostname>ZBOOK</Hostname>
+            <NektarVersion>5.2.0</NektarVersion>
+            <Timestamp>15-Feb-2022 11:12:30</Timestamp>
+        </Provenance>
+        <NekMeshCommandLine>advDiffErr.msh mesh-16elmnt.xml </NekMeshCommandLine>
+    </Metadata>
+    <EXPANSIONS>
+        <E COMPOSITE="C[1]" NUMMODES="4" TYPE="MODIFIED" FIELDS="u" />
+    </EXPANSIONS>
+</NEKTAR>

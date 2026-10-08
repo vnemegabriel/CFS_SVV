@@ -1,0 +1,8 @@
+/mnt/c/Users/valne/OneDrive/TESIS/code/svv_spectral_hp_1d/build/CMakeFiles/polylib.dir
+/mnt/c/Users/valne/OneDrive/TESIS/code/svv_spectral_hp_1d/build/CMakeFiles/svvhp.dir
+/mnt/c/Users/valne/OneDrive/TESIS/code/svv_spectral_hp_1d/build/CMakeFiles/burgers_svv.dir
+/mnt/c/Users/valne/OneDrive/TESIS/code/svv_spectral_hp_1d/build/CMakeFiles/cns1d_svv.dir
+/mnt/c/Users/valne/OneDrive/TESIS/code/svv_spectral_hp_1d/build/CMakeFiles/test_svv_operator.dir
+/mnt/c/Users/valne/OneDrive/TESIS/code/svv_spectral_hp_1d/build/CMakeFiles/test.dir
+/mnt/c/Users/valne/OneDrive/TESIS/code/svv_spectral_hp_1d/build/CMakeFiles/edit_cache.dir
+/mnt/c/Users/valne/OneDrive/TESIS/code/svv_spectral_hp_1d/build/CMakeFiles/rebuild_cache.dir

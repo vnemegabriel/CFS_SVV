@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<NEKTAR>
+    <GEOMETRY DIM="2" SPACE="2">
+        <VERTEX COMPRESSED="B64Z-LittleEndian" BITSIZE="64">eJxllTtMVFEQQAcF/KCioqLiB5WPf/CD+L/EZkUrExsTGiqyiRCxo1wbY2uitbFAoYSEyvASTbY0RBIKaA2x3EKNpdncM/N27nvN2bzz5r07987MijRetcxTpAm+f7OxNLmxWfBb4IdK9D+eNT4nsjV5//oT75vh55l4/8HEZP2H+ZYkvlzyvhUuTMf4bOjh257Rr+a3JfHDayXnt8Mv5Rj/ouNR3Qf1O5L4fy+93wmr4zH+VetU/Yf5tiR+rM/7XVD3jX00vzuJ5xzM74F+X2vm25P41O+FrKtwvvtgJeaVaZ7q98O5zXguXa/9+XTA79V4//E7fz4H4J/Z6H8ujrr9PQj1vZ/id8wfglo38zN+fzqhr5s8/8OQcy3kfwQ+j3WRLZd9/kch687+zvr8u+DY0+hXf/v8j0G9z3O2vuOwxL6tVH3+J+A36p4+MH8S+rrP8+/2PqT5n/LvD0vTPv/Tfn2B9Zk/4/MLug/qe/z+BH1OfS/8RV1QJ+b7IOcT6GPz/dD3bZ7/WUh9FPI/B6mvQH2ZPw+pz6B9oP4CpC6C1on6i5D+CPSHre8S1LrX76i/DOnPQH+aH4B+7uT5D0LmRyH/K3AlzqfwseLzvwr1u8w/89cgfROYr+avw0Xqlvlt6xuC2tcjEz7/G1DnJnPU/DD0czPP/6Y0XrVC/rcS7/8HRW4n3s9RkTuJ93NG5G7ifR+K3Eu8r1OR+4n35ygSEu8p8h/Ad+5p</VERTEX>
+        <EDGE COMPRESSED="B64Z-LittleEndian" BITSIZE="64">eJx1lMVuA0EQBR1mZnaYmZmZmZn5/2+5TB1S0vrSqqfxeF3dvbHY/09CRE2MqEkRlU+yzsMpEZwq5r40nedcuphzGWLuy4z4fpaY72dH3Jej89ybK+bePDH35es8v1cg5vcKxdxXpPM8R7GY5ygRc19pqPSd5ysT83zlYvpcoZznrhTTzyrl/J9qMX2rUc7/rBXTnzrl/P+4mD7UK8dLgxjfjcrx1SSmD82h4hOPLWI8torx2qYcv+1ivHYox3unGK9dyulHtxivPcrpU68Yr33K6V+/GK8DyunroBjfQ6HiMx7qsJh+j4jxOqqcORgT43VcOfMxIcbrpHLmZkqM12nlzNOMGK+zypmzOTFe55UzfwtifC+GGg+VuVwSM5fLYryuKGdeV8V4XVPOHK+L8bqhnPneFON1Szlzvy3G645y9mFXjNc95ezJvhjfB6Hik/05FLM/R2K8Hitnr07EeD1Vzr6difF6rpw9vBDj9VI5+3klxuu1cvb2RozXW+Xs850Y3/eh4pM9fxCz549ivD4pZ/+fxXh9Uc574VWM1zflvC/exXj9UM575FOM1y/lvF++xXj9Uc5751eM7z+v0TO2</EDGE>
+        <ELEMENT>
+            <Q COMPRESSED="B64Z-LittleEndian" BITSIZE="64">eJx10kdPQlEARGHsiqioiGJBsCsK9t577733Xv7/zs2ZhZPI5kvOe+HdTG4g8PeXhdmY80/PxTzMt+fqBViIRfa/6kEsxpB9R70ES7HMvqcexnKssHOqV2IEq+zcUazGGtQehdZjWGvnL7Jeh/X2vaD1Bozb82LrjZhA7RSynsQmDNv76s3YgtpJ+7ZiG7ajdiqz3oGdqJ3C1rswhdqp3Ho39qB2qrCexgxqp0rrvdiH2ilivR8HUDvp3gziEA6jdopaH8FR1E7V1sdwHLVTjfUJnETtFLM+hdOonWqtz+Asaqc663M4j9pJ93gBF3EJtVOD9WVcQe0Ut76Ka6idGq2v4wZqp4T1TdxC7ZS0vo07qJ2arO/iHmon3Zt9PMBD1E4t1o/wGLVTq/UTPEXt1Gb9DM9RO7Vbv8BL1E4d1q/wGrVTp/UbvEXtpHt9h/f4gNopZf0Rn1A7dVt/xhfUTj3WX/ENtVPa+jt+oHbKWP/EL9ROvda/8Qe10y8kri7L</Q>
+        </ELEMENT>
+        <COMPOSITE>
+            <C ID="1"> Q[0-48] </C>
+            <C ID="100"> E[0,22,37,52,67,82,97] </C>
+            <C ID="200"> E[98,100,102,104,106,108,110] </C>
+            <C ID="300"> E[111,96,81,66,51,36,20] </C>
+            <C ID="400"> E[21,18,15,12,9,6,3] </C>
+        </COMPOSITE>
+        <DOMAIN> C[1] </DOMAIN>
+    </GEOMETRY>
+    <Metadata>
+        <Provenance>
+            <GitBranch>refs/heads/master</GitBranch>
+            <GitSHA1>9bd3c63b7e30f5f7fd9fddd65eb11b9413df94b4</GitSHA1>
+            <Hostname>ZBOOK</Hostname>
+            <NektarVersion>5.2.0</NektarVersion>
+            <Timestamp>15-Feb-2022 11:13:46</Timestamp>
+        </Provenance>
+        <NekMeshCommandLine>advDiffErr.msh mesh-49elmnt.xml </NekMeshCommandLine>
+    </Metadata>
+    <EXPANSIONS>
+        <E COMPOSITE="C[1]" NUMMODES="4" TYPE="MODIFIED" FIELDS="u" />
+    </EXPANSIONS>
+</NEKTAR>

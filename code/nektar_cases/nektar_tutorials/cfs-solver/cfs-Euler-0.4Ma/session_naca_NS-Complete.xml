@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<NEKTAR xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="http://www.nektar.info/nektar.xsd">
+
+    <EXPANSIONS>      
+      <E COMPOSITE="C[1]" NUMMODES="5" FIELDS="rho,rhou,rhov,E" TYPE="MODIFIED" />
+      <E COMPOSITE="C[2]" NUMMODES="5" FIELDS="rho,rhou,rhov,E" TYPE="MODIFIED" />
+    </EXPANSIONS>
+
+    <CONDITIONS>
+      <SOLVERINFO>
+        <!--Implicit-->
+        
+        <I PROPERTY="EQType"                VALUE="NavierStokesImplicitCFE"/>
+        <I PROPERTY="Projection"            VALUE="DisContinuous"       />
+        <I PROPERTY="AdvectionType"         VALUE="WeakDG"              />
+        <I PROPERTY="DiffusionType"         VALUE="InteriorPenalty"     />
+        <I PROPERTY="AdvectionAdvancement"  VALUE="Implicit"            />
+        <I PROPERTY="DiffusionAdvancement"  VALUE="Implicit"            />
+        <I PROPERTY="TimeIntegrationMethod" VALUE="DIRKOrder2"          />
+        <I PROPERTY="UpwindType"            VALUE="Roe"                 />
+        <I PROPERTY="ProblemType"           VALUE="General"             />
+        <I PROPERTY="ViscosityType"         VALUE="Variable"            />
+        
+        <!--Explicit-->
+        <!--
+        <I PROPERTY="EQType"                VALUE="NavierStokesCFE"     />
+        <I PROPERTY="Projection"            VALUE="DisContinuous"       />
+        <I PROPERTY="AdvectionType"         VALUE="WeakDG"              />
+        <I PROPERTY="DiffusionType"         VALUE="InteriorPenalty"     />
+        <I PROPERTY="AdvectionAdvancement"  VALUE="Explicit"            />
+        <I PROPERTY="DiffusionAdvancement"  VALUE="Explicit"            />
+        <I PROPERTY="TimeIntegrationMethod" VALUE="RungeKutta2_SSP"     />
+        <I PROPERTY="UpwindType"            VALUE="Roe"                 />
+        <I PROPERTY="ProblemType"           VALUE="General"             />
+        <I PROPERTY="ViscosityType"         VALUE="Variable"            />
+        -->
+      </SOLVERINFO>
+
+      <PARAMETERS>
+        <!-- Flow parameters -->
+        <P> Gamma                 = 1.4                     </P>
+        <P> Ma                    = 0.4                     </P>
+        <P> GasConstant           = 1.0/(Gamma*Ma^2)        </P>
+        <P> Re                    = 1.0e3                   </P>
+        <P> mu                    = 1.0/Re                  </P>
+        <P> Tref                  = 293.15                  </P> <!--[K], ref. for Sutherland's law-->
+        <P> Pr                    = 0.72                    </P>
+
+      
+        <!-- Customized parameters -->
+        <P> rhoInf                = 1.0                     </P>
+        <P> TInf                  = 1.0                     </P>
+        <P> UInf                  = 1.0                     </P>
+        <P> pInf                  = rhoInf*GasConstant*TInf </P>
+        <P> AoA                   = 0.0/180.0*PI            </P>
+        <P> uInf                  = UInf*cos(AoA)           </P> 
+        <P> vInf                  = UInf*sin(AoA)           </P>
+        <P> Twall                 = TInf                    </P>
+      
+        <!-- Number of steps-->
+        <!--Implicit-->
+        
+        <P> Timestep              = 1.0e-3                  </P> <!--1e-4, 100-->
+        <P> NumSteps              = 30000                    </P>  <!--2e-3, 500-->
+        <P> IO_InfoSteps          = 1                       </P>
+        <P> IO_CheckSteps         = 500                     </P>
+        
+        <!--Explicit-->
+        <!--
+        <P> Timestep              = 5.0e-5                  </P>
+        <P> NumSteps              = 40000                   </P> 
+        <P> IO_InfoSteps          = 100                     </P>
+        <P> IO_CheckSteps         = 5000                    </P>
+        -->           
+      </PARAMETERS>
+
+      <VARIABLES>
+        <V ID="0"> rho  </V>
+        <V ID="1"> rhou </V>
+        <V ID="2"> rhov </V>
+        <V ID="3"> E    </V>
+      </VARIABLES>
+
+      <BOUNDARYREGIONS>
+        <B ID="0"> C[7] </B>   <!-- wall !-->
+        <B ID="1"> C[5] </B>   <!-- outflow -->
+        <B ID="2"> C[3,6] </B> <!-- top and bottom -->
+        <B ID="3"> C[4] </B>   <!-- inflow -->
+      </BOUNDARYREGIONS>
+
+      <BOUNDARYCONDITIONS>
+        <REGION REF="0">
+          <D VAR="rho"  USERDEFINEDTYPE="WallViscous" VALUE="0" />
+          <D VAR="rhou" USERDEFINEDTYPE="WallViscous" VALUE="0" />
+          <D VAR="rhov" USERDEFINEDTYPE="WallViscous" VALUE="0" />
+          <D VAR="E"    USERDEFINEDTYPE="WallViscous" VALUE="0" />
+        </REGION>
+        <REGION REF="1">
+          <D VAR="rho"    VALUE="rhoInf"     />
+          <D VAR="rhou"   VALUE="rhoInf * uInf"   />
+          <D VAR="rhov"   VALUE="rhoInf * vInf"   />
+          <D VAR="E"      VALUE="pInf / (Gamma - 1) + 0.5 * rhoInf * (uInf * uInf + vInf * vInf)"/>
+        </REGION>
+        <REGION REF="2">
+          <D VAR="rho"    VALUE="rhoInf"     />
+          <D VAR="rhou"   VALUE="rhoInf * uInf"   />
+          <D VAR="rhov"   VALUE="rhoInf * vInf"   />
+          <D VAR="E"      VALUE="pInf / (Gamma - 1) + 0.5 * rhoInf * (uInf * uInf + vInf * vInf)"/>
+        </REGION>
+         <REGION REF="3">
+          <D VAR="rho"    VALUE="rhoInf"     />
+          <D VAR="rhou"   VALUE="rhoInf * uInf"   />
+          <D VAR="rhov"   VALUE="rhoInf * vInf"   />
+          <D VAR="E"      VALUE="pInf / (Gamma - 1) + 0.5 * rhoInf * (uInf * uInf + vInf * vInf)"/>
+        </REGION>
+      </BOUNDARYCONDITIONS>
+
+      <FUNCTION NAME="InitialConditions">
+        <F VAR="rho,rhou,rhov,E"    FILE="naca_NS_start.fld"/>
+        
+        <!--
+        <F VAR="rho,rhou,rhov,E"    FILE="naca_im_start.fld"/>
+        -->
+        <!--
+        <E VAR="rho"    VALUE="rhoInf"     />
+        <E VAR="rhou"   VALUE="rhoInf * uInf"   />
+        <E VAR="rhov"   VALUE="rhoInf * vInf"   />
+        <E VAR="E"      VALUE="pInf / (Gamma - 1) + 0.5 * rhoInf * (uInf * uInf + vInf * vInf)"/>
+        -->         
+      </FUNCTION>
+    </CONDITIONS>
+
+</NEKTAR>

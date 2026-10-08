@@ -1,0 +1,18 @@
+# Una corrida por línea. Borrar una línea la saca del caso.
+id                caso        sesion                              mu         difusion   stab  P
+V2axial_dg_P1     V2axial     SquareDomain_Euler_2D_AxialFlow     PENDIENTE  PENDIENTE  dg    1
+V2axial_dg_P2     V2axial     SquareDomain_Euler_2D_AxialFlow     PENDIENTE  PENDIENTE  dg    2
+V2axial_dg_P3     V2axial     SquareDomain_Euler_2D_AxialFlow     PENDIENTE  PENDIENTE  dg    3
+V2axial_dg_P4     V2axial     SquareDomain_Euler_2D_AxialFlow     PENDIENTE  PENDIENTE  dg    4
+V2diagonal_dg_P1  V2diagonal  SquareDomain_Euler_2D_DiagonalFlow  PENDIENTE  PENDIENTE  dg    1
+V2diagonal_dg_P2  V2diagonal  SquareDomain_Euler_2D_DiagonalFlow  PENDIENTE  PENDIENTE  dg    2
+V2diagonal_dg_P3  V2diagonal  SquareDomain_Euler_2D_DiagonalFlow  PENDIENTE  PENDIENTE  dg    3
+V2diagonal_dg_P4  V2diagonal  SquareDomain_Euler_2D_DiagonalFlow  PENDIENTE  PENDIENTE  dg    4
+V3_dg_P1          V3          Couette_WeakDG_LDG_SEM              -          -          dg    1
+V3_dg_P2          V3          Couette_WeakDG_LDG_SEM              -          -          dg    2
+V3_dg_P3          V3          Couette_WeakDG_LDG_SEM              -          -          dg    3
+V3_dg_P4          V3          Couette_WeakDG_LDG_SEM              -          -          dg    4
+V4_dg_P1          V4          MMS_Compressible_Poiseuille_testIP  -          -          dg    1
+V4_dg_P2          V4          MMS_Compressible_Poiseuille_testIP  -          -          dg    2
+V4_dg_P3          V4          MMS_Compressible_Poiseuille_testIP  -          -          dg    3
+V4_dg_P4          V4          MMS_Compressible_Poiseuille_testIP  -          -          dg    4

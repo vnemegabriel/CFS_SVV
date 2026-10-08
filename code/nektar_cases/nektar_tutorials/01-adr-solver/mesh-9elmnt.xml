@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<NEKTAR>
+    <GEOMETRY DIM="2" SPACE="2">
+        <VERTEX COMPRESSED="B64Z-LittleEndian" BITSIZE="64">eJxjYEAGH/aj0gwMjFA643ooEFzFkGeC0lsbIPL/NZHVMTAwo5nvczkERZ4FSsP0Qc2xh8mzoumHugMuzwalUc39AJdnx+4/uDwHqn57dP9xorrPHuZPmDwXlN4IdTdMHUyeG0qjuhthPw+q+zDs50WTR40HBgY+NHlUfzAw8GM3Hy4PAAyiVM0A</VERTEX>
+        <EDGE COMPRESSED="B64Z-LittleEndian" BITSIZE="64">eJx1jzcOwDAMxJzee/v/T7OEQwhIy4GCLFMp/SsLMg+yCJIqNQ9XAddi9jWaZ64VM9eJ2dd/yV28H8S8H8XcManP3lmM76I+/61i7tjkg8cuxuMIvE718bsC31t9vB8xvi/qBwJ0</EDGE>
+        <ELEMENT>
+            <Q COMPRESSED="B64Z-LittleEndian" BITSIZE="64">eJx1zkkOgCAUBFEUFBQccbj/Td3UX9gJbF5SJNDO/U+HPfpGDzjgKPfWIyac5N0ZMxb5L0hfcG3ssL7hLjts54EnVtkRpV94y44k/cFXdnzXiAG1</Q>
+        </ELEMENT>
+        <COMPOSITE>
+            <C ID="1"> Q[0-8] </C>
+            <C ID="100"> E[0,10,17] </C>
+            <C ID="200"> E[18,20,22] </C>
+            <C ID="300"> E[23,16,8] </C>
+            <C ID="400"> E[9,6,3] </C>
+        </COMPOSITE>
+        <DOMAIN> C[1] </DOMAIN>
+    </GEOMETRY>
+    <Metadata>
+        <Provenance>
+            <GitBranch>refs/heads/master</GitBranch>
+            <GitSHA1>9bd3c63b7e30f5f7fd9fddd65eb11b9413df94b4</GitSHA1>
+            <Hostname>ZBOOK</Hostname>
+            <NektarVersion>5.2.0</NektarVersion>
+            <Timestamp>15-Feb-2022 11:11:58</Timestamp>
+        </Provenance>
+        <NekMeshCommandLine>advDiffErr.msh mesh-9elmnt.xml </NekMeshCommandLine>
+    </Metadata>
+    <EXPANSIONS>
+        <E COMPOSITE="C[1]" NUMMODES="4" TYPE="MODIFIED" FIELDS="u" />
+    </EXPANSIONS>
+</NEKTAR>

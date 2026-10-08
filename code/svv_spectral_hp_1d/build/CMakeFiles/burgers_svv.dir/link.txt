@@ -1,0 +1,1 @@
+/usr/bin/c++ -O3 -DNDEBUG CMakeFiles/burgers_svv.dir/apps/burgers_svv.cpp.o -o burgers_svv  libsvvhp.a libpolylib.a

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<NEKTAR>  
+    <EXPANSIONS>     
+        <E COMPOSITE="C[1]" NUMMODES="5" TYPE="MODIFIED" FIELDS="u" />
+    </EXPANSIONS>
+    <CONDITIONS>
+        <SOLVERINFO>
+            <!-- Defines the equation type. -->
+            <I PROPERTY="EQTYPE"     VALUE="Poisson"   /> 
+            <!-- Add the projection method here. -->
+            <I PROPERTY="Projection" VALUE="Continuous"       />
+        </SOLVERINFO>
+        
+        <!-- setting the variable -->
+        <VARIABLES>
+            <V ID="0"> u </V>
+        </VARIABLES>
+        
+        <!-- Defining boundary regions -->
+        <BOUNDARYREGIONS>
+            <B ID="0"> C[200] </B>  <!-- Right  -->
+            <B ID="1"> C[400] </B>  <!-- Left   -->
+            <!-- Insert a top/bottom composite here -->
+            <B ID="2"> C[100,300] </B>
+        </BOUNDARYREGIONS>
+        
+        <BOUNDARYCONDITIONS>
+            <!-- Right: Neumann condition -->
+            <REGION REF="0"> 
+                <N VAR="u"  VALUE="2*PI*sin(2*PI*y)" />
+            </REGION>
+
+            <!-- Left: Neumann condition -->
+            <REGION REF="1">
+                <N VAR="u"  VALUE="-2*PI*sin(2*PI*y)" />
+            </REGION>
+            
+            <!-- Bottom and top: add a Dirichlet condition here! -->
+            <REGION REF="2">  
+                <D VAR="u"  VALUE="0" />
+            </REGION>
+        </BOUNDARYCONDITIONS>
+
+        <!-- Add the forcing function here. -->
+        <FUNCTION NAME="Forcing">
+            <E VAR="u"  VALUE="-8*PI*PI*sin(2*PI*x)*sin(2*PI*y)" />
+        </FUNCTION>
+
+        <!-- Defines the exact solution. -->
+        <FUNCTION NAME="ExactSolution">
+            <E VAR="u"  VALUE="sin(2*PI*x)*sin(2*PI*y)" />
+        </FUNCTION>
+    </CONDITIONS>
+</NEKTAR>

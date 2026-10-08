@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<NEKTAR>
+    <GEOMETRY DIM="2" SPACE="2">
+        <VERTEX COMPRESSED="B64Z-LittleEndian" BITSIZE="64">eJxllktIVFEYx49l72bKsnRqKqe3j6YyK8vy9NDRyt7e7GH2cNOu1BYiCRKRkBFtZmOEkO6CoEUQItxds4kwIlpGCuJy2ga9hvP/nzvfubP5Dfc3Z+65//Od71yl8j9ZX1KpAnBmdLr22fRsyM8Bi0eM7+jP/51Sc53/f9orfSHYMGyuT/z60BXP/LB+njO+9Kf088GetBlfnW31PO+r9Quc8S1fpF8Ivnpuxvuv78YzXRPWL3LGjxZJvxicHDLj01M9Oa/plzjj3z+4L/xS8M9jM/7RuJebn/URZ/ydb9JHweRDMz5Zn8nlY/0yZ/xkk/TLQa4b1tH6Imc86sD6FaBc16z1K53xri8GMa9Qfa0CK81z+XxO+tW8f43x7YUZUR8l4GyFuR6LeGL9S8FUwvipxntifWPgWInxfc1yfdfwS9T4Fy/l+qwFOzCvJzUy/zg4jrrHPrB+Hecp6j7Ibz2IugjltwEcMHXlFwzK/MpAzNvnc9AnwHcDxv8tl/ltBD91muu/v8v8NoEzKeM73nSL/DaD/F/cx/otYAnWDeto/VaQ+747LfPbBsp9H+S3HcS+DOVXDmJf+5+HZH4VIOrCZ53QV4Jt5rn92ZTMrwqsKza+rK9L5LcDjOE6fmfnnwSZ+8dOmd9OkHWNOrd+F8i+hz5o/W5Q9r0gv2rptZvfHvn/mn2WvkbOTzckZH575fNpPJ/1+0Dkppkj/X6QuSFHO/9aEOujUafWHwC577G+1h8E2fdxDlhfB8q+H+R3CER9hvI7zJxMfWuec/T1IPaHZp+j542wvzT3Mf0REHWpWaf0R0HWFdeB/hj4FvuW96E/Dtq+GJX5NYADPPcGZX6NoDz3gvxSIPpjKL8mEP1Vp4Zlfs0g+rPmOUJ/gvlFjLd9Ep+TIOuCfYD+FJ8T+451Tt8Csq9xHelPg5iX5jzpz4A893E+Wn8WlOd+kN85/n9v/rggv/PMx7wf6NIRmd8F3h/3raqX+V3kF6wrzyFebuX8sG/YZ+k9kH2JfYT+Esi+j3PA+jaQ5yrrgP4yyPee9n6Z3xVQvvcE+V1V+Z9sKL9rjpfv0Uq1O16+Byl13fHynP+/Lo6X55hSNxwv+7RSNx0v+5BStxwv95lStx0v60ipTsdLKvUPrv30/AAA</VERTEX>
+        <EDGE COMPRESSED="B64Z-LittleEndian" BITSIZE="64">eJx1lelXjVEYRzOPCaFI3IwZMhNCV2Us80wlSmSeypAxFMmQeRZCEaF/sC9nf7DXeu+Xs/ZvnXvue9/9nOdJSPj/0yNi7Rmx9opY+fTWfrhPBPcVc14/7WdffzH7Bog5b2DE9weJ+f7giPMStZ9zh4g5N0nMeUO1n98bJub3hos5L1n7eY4RYp5jpJjzRmk/z5ci5vlSxZw3Wvt57jFinjtNzHljw0od8n/SxfyfcWLqbrxy/mdMTH1lKOf/TxBTRxOV814miamXycp5X1PE1MVU5bzHTDH+pynn/U4X43mGct77TDE+s5TjY5YYz7PDii88zRHjaa4Yb/OUx8I6X4y3BcrxulCMt0XK8Z0txtti5dTBEjHeliqnPnLEeFumnLpZLsbbCuXUU64Yb3Hl1NlKMT7zwoov6i9fTP0ViPG2Sjl1uVocC+sa5dTrWjHe1imnjteL8VaonPouEuNtg3LqfqMYb5uUcx82i/G2RTn3ZKsYb9uUc3+2i/G5I6z44l7tFHOvdonxtls5922PGG97lXMP94nxVqyc+1kixlupcu7tfjHeypRznw+I8XZQOfe8XIy3CuXc/0NivFUqpy8cFuPzSFjxRb+oEtMvjorxdkw5feS4GG8nlNNfTorxdkp5PKynxXg7o5x+dFaMt3PK6VPnxXirVk7/qhHj7YJy+tpFMd4uKaffXRbjszas+KIPXhHTB6+K8XZNOf3xuhhvN5TTN2+K8VannH56SxwP623l9Nk7YrzVK6f/Nojxdlc5ffmeGG+NyunX98V4a1JOH38gxufDsOKL/v5ITH9/LMZbs3L6/hMx3p4qZx48E+PtuXLmxAsx3l4qZ368EuPttXLmyhsx3t4qZ968E+PtvXLm0Acx3j4qZz61iPH5Kaz4Ym59FjO3vojx1qqcefZVjLdvyplz38V4a1PO/GsX4+2HcubiTzHeOpSXhfWXGG+/lTNHO8V4+6Oc+fpXjLd/ypm7XWJ8dgM814RV</EDGE>
+        <ELEMENT>
+            <Q COMPRESSED="B64Z-LittleEndian" BITSIZE="64">eJx11dVTVAEAhXFMFEmXlkYaaaRxaWnsVuzubgywu7u79R/05TsPnhn35Tfz3Z29d8/e3Q0J+fcxDsfjhP/0iTgJJ9tx9VCcglPtddXDcBqG23nUIzASo+x86tEYg9PtOtUDGItxdt3q8ZiAiXb96kmYjDNQ7zsFUzENtW+Y9XTMQN9DPROz7PrDrWfjTDtfhPUczLXjkdbzMB+1e5T1AizEgD1fvQiLUbvHWJ+FJajd9TmXYhmWo3YPWK/AStTusdarsBq1e5z12ViD2j3eei3WoXZPsF6PDajdE603YhNq9yTrzTgHtXuy9SC2oHbXfd2KbdiO2j3Fegd2onZPtd6Fc1G7p1nvxh7U7unWe7EPtXuG9X4cQO2eaX0Qh1C7Z1mfh/NRu2dbX4ALMYj6Pi7CxbgEtXuO9aW4DLV7rvXluAK1e571lbgKtXu+9dW4BrV7gfVhXIvavdD6OlyP2r3I+gbciNq92Pom3IzaXff1FtyK21C7l1jfjjtQu5da34m7ULuXWd+Ne1C7l1vfi/tQu1dY348HcBgrrR/EQ6jdq6wfxiOo3autH8VjqN31/TyOJ/Akavca66fwNGr3WusjeAa1e531s3gOtXu99fM4itq9wfoYXkDt3mj9Il5C7d5k/TJeQe3ebP0qXkPtrt/v63gDb6J2D1q/hbdRu7dYv4N3cQRbrd/D+6jd26w/wIeo3dutP8LHqN07rD/Bp6jdO60/w+eo3busv8CXqN31P/QKX+Mb1O7d1t/iO9TuPdbf4wfU7r3WP+In1O591j/jF9Tu/da/4jfU7gPWv+MP1O6D1n/iL9TuQ9Z/4x/U7n8BM619cgAA</Q>
+        </ELEMENT>
+        <COMPOSITE>
+            <C ID="1"> Q[0-80] </C>
+            <C ID="100"> E[0,28,47,66,85,104,123,142,161] </C>
+            <C ID="200"> E[162,164,166,168,170,172,174,176,178] </C>
+            <C ID="300"> E[179,160,141,122,103,84,65,46,26] </C>
+            <C ID="400"> E[27,24,21,18,15,12,9,6,3] </C>
+        </COMPOSITE>
+        <DOMAIN> C[1] </DOMAIN>
+    </GEOMETRY>
+    <Metadata>
+        <Provenance>
+            <GitBranch>refs/heads/master</GitBranch>
+            <GitSHA1>9bd3c63b7e30f5f7fd9fddd65eb11b9413df94b4</GitSHA1>
+            <Hostname>ZBOOK</Hostname>
+            <NektarVersion>5.2.0</NektarVersion>
+            <Timestamp>15-Feb-2022 11:14:33</Timestamp>
+        </Provenance>
+        <NekMeshCommandLine>advDiffErr.msh mesh-81elmnt.xml </NekMeshCommandLine>
+    </Metadata>
+    <EXPANSIONS>
+        <E COMPOSITE="C[1]" NUMMODES="4" TYPE="MODIFIED" FIELDS="u" />
+    </EXPANSIONS>
+</NEKTAR>

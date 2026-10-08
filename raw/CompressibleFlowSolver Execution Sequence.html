@@ -1,0 +1,1010 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>CompressibleFlowSolver Execution Sequence</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/contrib/auto-render.min.js"></script>
+<style>
+/* single reading column; call trees, tables and figures scroll inside their own boxes */
+:root{--bg:#f7f8fa;--fg:#1c2230;--mute:#667085;--line:#d5dae3;--panel:#eef1f6;--curve:#2557a7;--avg:#c2410c;--ok:#15803d;--node:#1c2230;
+--serif:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--mono:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12161d;--fg:#e4e8ef;--mute:#98a2b3;--line:#2d3542;--panel:#1a2029;--curve:#7aa7f0;--avg:#fb923c;--ok:#4ade80;--node:#e4e8ef;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#12161d;--fg:#e4e8ef;--mute:#98a2b3;--line:#2d3542;--panel:#1a2029;--curve:#7aa7f0;--avg:#fb923c;--ok:#4ade80;--node:#e4e8ef;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:17px/1.7 var(--serif);padding-inline:16px;padding-block:28px}
+main{max-width:800px;margin:auto;display:grid;gap:14px}
+h1{font-size:1.65rem;margin:0;text-wrap:balance}
+h2{font-size:1.3rem;margin:26px 0 0;padding-top:14px;border-top:2px solid var(--line);text-wrap:balance}
+h3{font-size:1.08rem;margin:10px 0 0;text-wrap:balance}
+h4{font-size:1rem;margin:4px 0 0;font-style:italic;font-weight:400}
+p,ol,ul{margin:0}li{margin:4px 0}
+.ref{font:12px var(--mono);color:var(--mute)}
+.tag{font:11px var(--mono);color:var(--curve);white-space:nowrap}
+.note{background:var(--panel);padding:10px 14px;border-radius:4px;font-size:15px}
+.warn{border-left:3px solid var(--avg);padding:6px 12px;font-size:15px;background:var(--panel)}
+svg{width:100%;height:auto;display:block}.wrap,math[display="block"]{overflow-x:auto;max-width:100%}
+math[display="block"]{display:block;padding:4px 0}
+table{border-collapse:collapse;font-size:14px;width:100%}
+td,th{border:1px solid var(--line);padding:4px 8px;text-align:left;vertical-align:top}th{background:var(--panel);font-weight:600}
+td code,li code,p code{font:12.5px var(--mono)}
+table.num{font:12px var(--mono);font-variant-numeric:tabular-nums;width:auto;margin:auto}table.num td{text-align:right}
+details{background:var(--panel);border-radius:4px}
+details>summary{cursor:pointer;padding:7px 12px;font-weight:600;font-size:15px}
+details>div{padding:4px 14px 12px;display:grid;gap:10px;font-size:15.5px}
+details.code{border-left:3px solid var(--curve)}
+details.code summary{font:12px var(--mono);color:var(--mute);font-weight:400;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+details.code pre{margin:0;padding:4px 14px 12px;overflow-x:auto;font:12.5px/1.5 var(--mono);color:var(--fg)}
+.tree{font:12.5px/1.55 var(--mono);background:var(--panel);padding:12px 14px;border-radius:4px;overflow-x:auto;white-space:pre;margin:0}
+.tree b{color:var(--curve);font-weight:400}.tree i{color:var(--avg);font-style:normal}.tree u{color:var(--mute);text-decoration:none}
+figure{margin:0;display:grid;gap:4px}figcaption{font:12px var(--mono);color:var(--mute)}
+.toc{columns:2;column-gap:28px;font-size:15px}@media (max-width:560px){.toc{columns:1}}
+.toc a{color:var(--fg)}
+</style>
+<main>
+<h1>CompressibleFlowSolver execution sequence</h1>
+<p class="ref">Nektar++ 5.10, CompressibleFlowSolver (explicit and implicit). Text: ASD-STE100. Companion to "Conservative staggered spectral element scheme" (K&amp;S Section 10.1).</p>
+
+<div class="note">
+<p><b>Source tags.</b> Each statement has a tag that gives its source.</p>
+<ul>
+<li><span class="tag">[DG x]</span> Nektar++ Developer Guide (TESIS/raw/books/Nektar-Developer-Guide.pdf).</li>
+<li><span class="tag">[UG x]</span> Nektar++ User Guide.</li>
+<li><span class="tag">[KS x]</span> Karniadakis &amp; Sherwin, <i>Spectral/hp Element Methods for CFD</i>, 2nd ed.</li>
+<li><span class="tag">[XML]</span> Your CFSTests session files (code/nektar_cases/CFSTests).</li>
+<li><span class="tag">[PLAN]</span> Your notes: code/SVV_nektar_implementation_plan.md and svv_les_dev/01_INTEGRACION_Y_TESTEO.md (line references checked against the 5.9.0 tree in /opt/nektar++; the thesis uses 5.10, so check the line numbers again).</li>
+<li><span class="tag">[SRC?]</span> Nektar++ source structure that the guides do not give. This page does not have the source tree. Verify these items with the grep commands in Section 3.8.</li>
+</ul>
+</div>
+
+<div class="toc">
+<p><a href="#p1">1. Governing equations and weak DG discretisation</a></p>
+<p><a href="#p2">2. Library layers and data structures</a></p>
+<p><a href="#p3">3. Execution sequence</a></p>
+<p><a href="#p4">4. Stabilisation and the SVV insertion point</a></p>
+<p><a href="#p5">5. Program and references</a></p>
+</div>
+
+<!-- ======================= PART 1 ======================= -->
+<h2 id="p1">1. Governing equations and weak DG discretisation</h2>
+
+<h3>1.1 Conservation form</h3>
+<p>The solver integrates the compressible Navier–Stokes equations in conservation form <span class="tag">[DG 15.1.1, eq. 15.1]</span>:</p>
+<p>$$\frac{\partial\mathbf U}{\partial t}=\mathcal L(\mathbf U)=-\nabla\cdot\mathbf H,\qquad \mathbf H_i=\mathbf F_i(\mathbf U)-\mathbf G_i(\mathbf U,\nabla\mathbf U).$$</p>
+<p>$\mathbf U$ is the vector of conserved variables. $\mathbf F_i$ is the inviscid flux in direction $i$. $\mathbf G_i$ is the viscous flux. In 2D <span class="tag">[UG 9.1]</span>:</p>
+<p>$$\mathbf U=\begin{pmatrix}\rho\\ \rho u\\ \rho v\\ E\end{pmatrix},\quad \mathbf F_x=\begin{pmatrix}\rho u\\ \rho u^2+p\\ \rho uv\\ u(E+p)\end{pmatrix},\quad \mathbf F_y=\begin{pmatrix}\rho v\\ \rho uv\\ \rho v^2+p\\ v(E+p)\end{pmatrix},\quad p=(\gamma-1)\Big(E-\tfrac12\rho|\mathbf u|^2\Big).$$</p>
+<p>$$\mathbf G_x=\begin{pmatrix}0\\ \tau_{xx}\\ \tau_{xy}\\ u\tau_{xx}+v\tau_{xy}+k\,\partial_xT\end{pmatrix},\qquad \tau_{ij}=\mu\Big(\partial_ju_i+\partial_iu_j-\tfrac23\delta_{ij}\nabla\cdot\mathbf u\Big).$$</p>
+<p>For <code>EulerCFE</code>, $\mathbf G=0$. The variable names in the session file are <code>rho</code>, <code>rhou</code>, <code>rhov</code>, <code>rhow</code>, <code>E</code> <span class="tag">[UG 9.3]</span>. The equation of state is selectable (<code>IdealGas</code>, <code>VanDerWaals</code>, <code>RedlichKwong</code>, <code>PengRobinson</code>).</p>
+
+<details open><summary>Why the solver uses this form</summary><div>
+<p>The form has four consequences in the solver.</p>
+<p><b>1. Correct shocks.</b> The equation is in divergence form and uses the conserved variables $\mathbf U=(\rho,\rho u,\rho v,E)$. The Lax–Wendroff theorem states that a conservative scheme, if it converges, converges to a weak solution. A weak solution satisfies the Rankine–Hugoniot conditions across a discontinuity:</p>
+<p>$$s\,[\![\mathbf U]\!]=[\![\mathbf F\cdot\mathbf n]\!],$$</p>
+<p>where $s$ is the shock speed and $[\![\cdot]\!]$ is the jump. Thus the position and the speed of the shock are correct. A non-conservative form (for example, in the primitive variables $\rho$, $u$, $p$) is equal for smooth flow, but at a shock it gives a different jump condition and an incorrect shock speed. The transonic NACA 0012 case has a shock, so this form is necessary.</p>
+<p><b>2. Discrete conservation.</b> Only the divergence form can be integrated by parts. This gives the weak DG form of Section 1.2, with a volume term $(\nabla\phi,\mathbf H)$ and a face term $\langle\phi,\hat H_n\rangle$. With $\phi=1$ the volume term is zero and the element balance contains only face fluxes. Adjacent elements use the same numerical flux. Thus mass, momentum and energy are conserved to round-off. K&amp;S Section 10.1 uses the same property (cell averages and face fluxes).</p>
+<p><b>3. One structure for all terms.</b> $\mathbf H=\mathbf F-\mathbf G$ puts the inviscid and the viscous fluxes in the same form. Both use the same three operations: flux at the quadrature points (volume), numerical flux on the trace (Riemann solver for $\mathbf F$, LDG or IP for $\mathbf G$), and integration. Thus <code>AdvectionWeakDG</code> and <code>DiffusionLDGNS</code> have the same structure. Artificial viscosity and SVV enter as one more flux in $\mathbf G$.</p>
+<p><b>4. Method of lines.</b> The right side is one operator, $\partial_t\mathbf U=\mathcal L(\mathbf U)$. This separates space from time. $\mathcal L$ is the function that the time integrator calls (<code>DoOdeRhs</code>, registered with <code>DefineOdeRhs</code>). Thus any explicit or implicit scheme of LibUtilities advances the same spatial operator. The implicit solver uses the same $\mathcal L$ in the residual $\mathbf N(\mathbf u)=\mathbf u-\mathbf s-\Delta t\,a_{ii}\,\mathcal L(\mathbf u)$.</p>
+<p>The conserved variables also set the boundary treatment: the boundary objects give the exterior state $\mathbf U^+$, and the Riemann solver returns a conservative flux.</p>
+</div></details>
+<h3>1.2 From the strong form to the weak form</h3>
+<p>The domain $\Omega$ is divided into $N_e$ elements $\Omega^e$. On each element, the solution is a polynomial. The polynomials of adjacent elements are independent (<code>Projection = DisContinuous</code>). The continuous projection is not available in this solver <span class="tag">[UG 9.3]</span>.</p>
+<p><b>Step 1.</b> Multiply (15.1) by a test function $\phi_p$ of element $e$ and integrate over $\Omega^e$:</p>
+<p>$$\int_{\Omega^e}\phi_p\,\frac{\partial\mathbf U}{\partial t}\,d\Omega=-\int_{\Omega^e}\phi_p\,\nabla\cdot\mathbf H\,d\Omega .$$</p>
+<p><b>Step 2.</b> Integrate the right side by parts. Use $\phi\,\nabla\cdot\mathbf H=\nabla\cdot(\phi\mathbf H)-\nabla\phi\cdot\mathbf H$ and the divergence theorem:</p>
+<p>$$\int_{\Omega^e}\phi_p\,\frac{\partial\mathbf U}{\partial t}\,d\Omega=\int_{\Omega^e}\nabla\phi_p\cdot\mathbf H\,d\Omega-\int_{\Gamma^e}\phi_p\,\mathbf H\cdot\mathbf n\,d\Gamma .$$</p>
+<p><b>Step 3.</b> On $\Gamma^e$ the solution has two values: the interior value $\mathbf U^-$ and the exterior value $\mathbf U^+$. Thus $\mathbf H\cdot\mathbf n$ is not defined. Replace it with a numerical flux $\hat H_n(\mathbf U^-,\mathbf U^+,\mathbf n)$ that both elements use. The result is the weak DG form <span class="tag">[DG eq. 15.2]</span> <span class="tag">[KS 6.2.2, eq. 6.2.9]</span>:</p>
+<p>$$\boxed{\int_{\Omega^e}\phi_p\,\frac{\partial\mathbf U}{\partial t}\,d\Omega=\int_{\Omega^e}\nabla\phi_p\cdot\mathbf H\,d\Omega-\int_{\Gamma^e}\phi_p\,\hat H_n\,d\Gamma}$$</p>
+<p>The inviscid part of $\hat H_n$ comes from a Riemann solver (<code>UpwindType</code>). The viscous part comes from the LDG or interior penalty method (<code>DiffusionType</code>) <span class="tag">[DG 15.1.2]</span> <span class="tag">[KS 10.5.1.2]</span>.</p>
+
+<details><summary>Why this form is conservative (link to K&amp;S Section 10.1)</summary><div>
+<p>Put $\phi=1$ in the weak form. The volume term is zero, because $\nabla 1=0$. The result is $\frac{d}{dt}\int_{\Omega^e}\mathbf U=-\int_{\Gamma^e}\hat H_n$. This is the finite-volume balance (10.1.3a) for the whole element. Two adjacent elements use the same $\hat H_n$ with opposite normals. Thus the inner fluxes cancel in the global sum. The staggered scheme of Section 10.1 gets conservation from the same property.</p>
+<p>The difference is the unknown. In Section 10.1 the unknowns are $P$ cell averages and a reconstruction gives the polynomial. In DG the polynomial coefficients are the unknowns, so no reconstruction is necessary. A constant is in every modal basis of Nektar++ ($\phi_0+\phi_1=1$ for <code>Modified_A</code>), so the $\phi=1$ argument applies.</p>
+</div></details>
+
+<details><summary>Strong form (equivalent; used by flux reconstruction)</summary><div>
+<p>Integrate the volume term by parts again. The result is</p>
+<p>$$\int_{\Omega^e}\phi_p\,\frac{\partial\mathbf U}{\partial t}=-\int_{\Omega^e}\phi_p\,\nabla\cdot\mathbf H-\int_{\Gamma^e}\phi_p\,(\hat H_n-\mathbf H^-\cdot\mathbf n).$$</p>
+<p>This form is equal to the weak form when the quadrature is exact. With inexact quadrature the two forms differ by aliasing terms. Flux reconstruction (FR) starts from this form. The User Guide states that only <code>WeakDG</code> is fully supported; other advection operators work only on quadrilaterals <span class="tag">[UG 9.3]</span>.</p>
+</div></details>
+
+<h3>1.3 Expansion and quadrature</h3>
+<p>Write the solution of element $e$ as $\mathbf U^\delta=\sum_q\mathbf u_q\phi_q(\mathbf x)$. Calculate all integrals with a quadrature rule: $N_Q$ points $\mathbf x_i$ with weights $w_i$ in the element, and $N_Q^\Gamma$ points on its boundary. $J_i$ is the Jacobian of the map at point $i$ (P1 of the companion page). The result is <span class="tag">[DG eq. 15.3]</span>:</p>
+<p>$$\sum_{i=1}^{N_Q}\sum_{q=1}^{N}\phi_p(\mathbf x_i)\,w_iJ_i\,\phi_q(\mathbf x_i)\,\frac{du_q}{dt}=\sum_{i=1}^{N_Q}w_iJ_i\,\nabla\phi_p(\mathbf x_i)\cdot\mathbf H(\mathbf U^\delta_i)-\sum_{i=1}^{N_Q^\Gamma}\phi_p(\mathbf x_i^\Gamma)\,w_i^\Gamma J_i^\Gamma\,\hat H_{n,i}.$$</p>
+<p>In your test files, the expansion is <code>Modified_A</code> with <code>GaussLobattoLegendre</code> points and $Q=P+2$ (<code>NUMMODES="4"</code>, <code>NUMPOINTS="5"</code>) <span class="tag">[XML]</span>. GLL with $Q$ points is exact up to degree $2Q-3=2P+1$ <span class="tag">[KS 2.4.1]</span>. Thus the mass matrix (degree $2P$) is exact on straight elements. The nonlinear flux is not exact (see Section 4.2).</p>
+
+<h3>1.4 Matrix form</h3>
+<p>Collect (15.3) for all $p$. The result is <span class="tag">[DG eq. 15.4]</span>:</p>
+<p>$$\frac{d\mathbf u}{dt}=\mathbf M^{-1}\Big[\sum_{j=1}^{d}\mathbf B^{\mathsf T}\mathbf D_j^{\mathsf T}\Lambda(w J)\,\mathbf H_j-\mathbf B_\Gamma^{\mathsf T}\mathbf M_c^{\mathsf T}\Lambda(w^\Gamma J^\Gamma)\,\hat{\mathbf H}_n\Big]=\mathcal L_\delta(\mathbf u_\delta).$$</p>
+<div class="wrap"><table>
+<tr><th>Symbol</th><th>Meaning</th><th>Size (one element, 1 variable)</th><th>Function <span class="tag">[DG Table 15.1]</span></th></tr>
+<tr><td>$\mathbf B$</td><td>basis at the quadrature points, $B_{iq}=\phi_q(\mathbf x_i)$ (backward transform)</td><td>$N_Q\times N$</td><td><code>BwdTrans</code></td></tr>
+<tr><td>$\mathbf D_j$</td><td>derivative in physical direction $j$ at the quadrature points (includes $\partial\xi/\partial x$)</td><td>$N_Q\times N_Q$</td><td><code>PhysDeriv</code></td></tr>
+<tr><td>$\Lambda(wJ)$</td><td>diagonal matrix of weights times Jacobian</td><td>$N_Q\times N_Q$</td><td>(geometric factors)</td></tr>
+<tr><td>$\mathbf M=\mathbf B^{\mathsf T}\Lambda(wJ)\mathbf B$</td><td>mass matrix</td><td>$N\times N$</td><td><code>MultiplyByElmtInvMass</code> applies $\mathbf M^{-1}$</td></tr>
+<tr><td>$\sum_j\mathbf B^{\mathsf T}\mathbf D_j^{\mathsf T}\Lambda(wJ)$</td><td>inner product with $\nabla\phi$</td><td>$N\times N_Q$</td><td><code>IProductWRTDerivBase</code></td></tr>
+<tr><td>$\mathbf J$</td><td>interpolation from element points to trace points</td><td>$N_Q^\Gamma\times N_Q$</td><td><code>GetFwdBwdTracePhys</code></td></tr>
+<tr><td>$\mathbf B_\Gamma$, $\mathbf M_c$</td><td>trace basis and map from trace modes to element modes</td><td>$N_Q^\Gamma\times N_\Gamma$, $N_\Gamma\times N$</td><td><code>AddTraceIntegral</code></td></tr>
+</table></div>
+<p>The Developer Guide writes the trace term as $\mathbf B_\Gamma^{\mathsf T}\mathbf M_c^{\mathsf T}\Lambda(w^\Gamma J)\mathbf J^\Gamma$. Here the term acts on $\hat{\mathbf H}_n$, which is already at the trace points.</p>
+
+<details><summary>Quadrature choice in K&amp;S and the aliasing condition</summary><div>
+<p>K&amp;S Section 10.5.1.3 uses $Q=P+2$ Gauss–Lobatto points in the element interior and $Q=P+1$ Gauss points on each edge. The edge rule is then exact up to degree $2P+1$. The book states that this condition is necessary for the full accuracy $O(h^{P+1})$.</p>
+<p>A flux $\mathbf F(\mathbf U)$ with $\mathbf U\in\mathbb P_P$ is a rational function for the Euler equations (division by $\rho$). No finite rule integrates it exactly. The User Guide gives a minimum number of points for consistent integration of the nonlinear terms <span class="tag">[UG 9.4.3, eq. 9.13]</span>:</p>
+<p>$$Q_{\min}=P_{exp}+\frac{\max(2P_{exp},P_{geom})}{2}+\frac32 .$$</p>
+</div></details>
+
+<h3>1.5 Time discretisation</h3>
+<p>Eq. (15.4) is a system of ODEs. A general linear method advances it <span class="tag">[DG 4.12.1]</span>. For a Runge–Kutta method with $s$ stages <span class="tag">[DG eqs. 15.5–15.8]</span>:</p>
+<p>$$\mathbf s^{(i)}=\mathbf u^n+\Delta t\sum_{j=1}^{i-1}a_{ij}\mathcal L_\delta(\mathbf u^{(j)}),\qquad \mathbf u^{(i)}=\mathbf s^{(i)}+\Delta t\,a_{ii}\,\mathcal L_\delta(\mathbf u^{(i)}),\qquad \mathbf U^{n+1}=\mathbf U^n+\Delta t\sum_{i=1}^{s}b_i\,\mathcal L(\mathbf U^{(i)}).$$</p>
+<p>For an explicit method, $a_{ii}=0$ and each stage is one evaluation of $\mathcal L_\delta$. For an implicit method ($a_{ii}\neq0$), each stage is a nonlinear system:</p>
+<p>$$\mathbf N(\mathbf u^{(i)})=\mathbf u^{(i)}-\mathbf s^{(i)}-\Delta t\,a_{ii}\,\mathcal L_\delta(\mathbf u^{(i)})=0\quad(15.9).$$</p>
+<p>Newton's method solves (15.9). Each Newton step solves $\frac{\partial\mathbf N}{\partial\mathbf v}\Delta\mathbf v=-\mathbf N(\mathbf v^k)$ (15.10) with restarted GMRES. GMRES needs only products of the Jacobian with a vector. A finite difference gives them <span class="tag">[DG eq. 15.12]</span>:</p>
+<p>$$\frac{\partial\mathbf N}{\partial\mathbf u}(\mathbf u)\cdot\mathbf q\simeq\frac{\mathbf N(\mathbf u+\epsilon\mathbf q)-\mathbf N(\mathbf u)}{\epsilon}.$$</p>
+<p>A block-relaxed Jacobi preconditioner $\mathbf P$ makes GMRES converge faster (15.13). The available schemes are <span class="tag">[UG 9.3]</span>:</p>
+<div class="wrap"><table>
+<tr><th>Explicit (<code>EulerCFE</code>, <code>NavierStokesCFE</code>)</th><th>Implicit (<code>EulerImplicitCFE</code>, <code>NavierStokesImplicitCFE</code>)</th></tr>
+<tr><td>ForwardEuler; RungeKutta SSP 2, 3; ClassicalRungeKutta 4; RungeKutta 5</td><td>BackwardEuler; BDFImplicit 1, 2; DIRK 2, 3, 4; DIRK ES5 3, 4</td></tr></table></div>
+
+<!-- ======================= PART 2 ======================= -->
+<h2 id="p2">2. Library layers and data structures</h2>
+<p>Nektar++ is a stack of libraries. Each layer uses only the layers below it. The solver is at the top. The diagram gives the layers and the classes that CompressibleFlowSolver uses from each. Open the panels below the table for the full explanation of each layer.</p>
+<figure><svg id="figlayers" viewBox="0 0 760 470" role="img" aria-label="Nektar++ library layers used by CompressibleFlowSolver"></svg>
+<figcaption>Library layers from the bottom (LibUtilities) to the solver. Each box lists the classes that the compressible solver uses. [DG 2.2, ch. 4–12, Fig. 15.1]</figcaption></figure>
+
+<div class="wrap"><table>
+<tr><th>Layer</th><th>Role</th><th>Used by CompressibleFlowSolver</th><th>Data it holds</th></tr>
+<tr><td>LibUtilities</td><td>points, bases, session input, time integration, factories, linear algebra</td><td><code>SessionReader</code>, <code>PointsManager</code>, <code>BasisManager</code>, <code>TimeIntegrationScheme</code>, <code>NekFactory</code></td><td>quadrature points and weights; basis values $\phi_p(\xi_q)$ and derivatives</td></tr>
+<tr><td>SpatialDomains</td><td>geometry of the mesh; map from reference to physical element</td><td><code>MeshGraph</code> (from <code>MeshGraphIO::Read</code>), <code>Geometry</code>, <code>GeomFactors</code></td><td>vertices, curvature, Jacobian matrix and determinant at quadrature points</td></tr>
+<tr><td>StdRegions</td><td>operators on the reference element</td><td><code>StdSegExp</code>, <code>StdQuadExp</code>, <code>StdTriExp</code>, …; <code>SVVLaplacianFilter</code>, <code>ExponentialFilter</code></td><td>bases, number of coefficients, matrix managers</td></tr>
+<tr><td>LocalRegions</td><td>operators on one physical element</td><td><code>SegExp</code>, <code>QuadExp</code>, … (is-a StdRegion, has-a Geometry)</td><td>pointer to geometry and geometric factors</td></tr>
+<tr><td>Collections</td><td>the same operator applied to many elements as one matrix product</td><td>used inside <code>BwdTrans</code>, <code>IProductWRTBase</code>, <code>PhysDeriv</code> of <code>ExpList</code></td><td>groups of elements of the same type, order and points</td></tr>
+<tr><td>MultiRegions</td><td>a field over many elements; trace (element boundaries); DG and CG fields</td><td><code>DisContField</code> (one per conserved variable), its trace <code>ExpList</code></td><td><code>m_coeffs</code> (modal coefficients), <code>m_phys</code> (values at quadrature points), trace maps</td></tr>
+<tr><td>SolverUtils</td><td>equation-system framework and numerical operators</td><td><code>EquationSystem</code>, <code>UnsteadySystem</code>, <code>AdvectionSystem</code>, <code>Advection</code> (<code>AdvectionWeakDG</code>), <code>Diffusion</code> (<code>DiffusionLDGNS</code>, <code>DiffusionIP</code>), <code>RiemannSolver</code>, <code>Forcing</code>, <code>Filter</code>, <code>Driver</code></td><td>fields array <code>m_fields</code>, time-integration objects</td></tr>
+<tr><td>CompressibleFlowSolver</td><td>physics: fluxes, boundary conditions, shock capturing</td><td><code>CompressibleFlowSystem</code>, <code>EulerCFE</code>, <code>NavierStokesCFE</code>, <code>CFSBndCond</code>, <code>ArtificialDiffusion</code>, Riemann solvers, <code>VariableConverter</code>, <code>EquationOfState</code></td><td>physical parameters ($\gamma$, $R$, $\mu$, Pr), boundary objects</td></tr>
+</table></div>
+<p class="warn">The Developer Guide names the central class <code>CompressibleFlowSolverSystem</code> (Fig. 15.1). Your plan files use <code>CompressibleFlowSystem</code> in <code>EquationSystems/CompressibleFlowSystem.cpp</code>, checked against the source. This page uses the source name.</p>
+
+<details><summary>LibUtilities in full: points, bases, managers, factories, time integration</summary><div>
+<p><b>Points.</b> A <code>PointsKey</code> has the number of points and the point type (for example <code>eGaussLobattoLegendre</code>). A <code>Points</code> object holds the point positions <code>m_points[3]</code>, the weights <code>m_weights[3]</code>, the derivative matrices <code>m_derivmatrix[3]</code> and interpolation managers <span class="tag">[DG 4.5.1, Fig. 4.1]</span>. For Gauss-type points, the weights come from the Jacobi formulae of K&amp;S App. B.</p>
+<p><b>Basis.</b> A <code>BasisKey</code> has the number of modes, the basis type (for example <code>eModified_A</code>) and a <code>PointsKey</code>. A <code>Basis</code> holds <code>m_bdata</code> (values $\phi_p(\xi_q)$) and <code>m_dbdata</code> (derivatives). The storage is one contiguous array: the fast index runs over the quadrature points, the slow index over the modes. This order matches the inner product, which is the most frequent kernel <span class="tag">[DG 4.5.2, 5.2.5]</span>.</p>
+<p><b>Managers.</b> Many elements use the same basis at the same points. A manager receives a key. If it has the object, it returns a shared pointer. If not, it makes the object, keeps it and returns it. Thus each basis exists one time in memory. <code>PointsManager</code> and <code>BasisManager</code> are global singletons <span class="tag">[DG 4.5]</span>.</p>
+<p><b>Factory.</b> The same mechanism selects classes from strings in the session file. A class registers a create function under a key (for example "Roe"). At run time the solver asks the factory for the key in <code>SOLVERINFO</code>. The solver does not need to know the class. This is how <code>EQType</code>, <code>AdvectionType</code>, <code>UpwindType</code>, <code>DiffusionType</code> and <code>ShockCaptureType</code> select objects <span class="tag">[DG 3.5.2]</span> <span class="tag">[PLAN]</span>.</p>
+<p><b>Time integration.</b> All schemes are general linear methods with $r$ steps and $s$ stages <span class="tag">[DG 4.12.1]</span>:</p>
+<p>$$\mathbf Y_i=\Delta t\sum_j a_{ij}\mathbf F_j+\sum_j u_{ij}\hat{\mathbf y}_j^{[n-1]},\qquad \hat{\mathbf y}_i^{[n]}=\Delta t\sum_j b_{ij}\mathbf F_j+\sum_j v_{ij}\hat{\mathbf y}_j^{[n-1]},\qquad \mathbf F_i=\hat f(\mathbf Y_i).$$</p>
+<p>The solver gives the scheme two functions: the right-hand side (<code>DefineOdeRhs</code>) and the projection (<code>DefineProjection</code>). The implicit solver also gives <code>DefineImplicitSolve</code> <span class="tag">[DG 4.12.6]</span>. The scheme calls these functions at each stage. Thus the solver does not know which scheme it uses.</p>
+</div></details>
+
+<details><summary>SpatialDomains in full: mesh, map and geometric factors</summary><div>
+<p><code>MeshGraphIO::Read</code> reads the mesh file and makes a <code>MeshGraph</code> (since v5.7.0). The <code>MeshGraph</code> owns one <code>Geometry</code> object for each element, indexed by global ID <span class="tag">[DG 6.2.5]</span>.</p>
+<p>The map $\chi(\xi)$ from the reference element to the physical element is linear for straight segments and triangles, bilinear for straight quadrilaterals, and of higher order for curved elements. A curved edge adds an edge-mode term to the map, with coefficients from the curve points in the mesh file <span class="tag">[DG 6.1.1]</span>.</p>
+<p><code>GeomFactors</code> holds, at each quadrature point, the Jacobian matrix $J_{ij}=\partial x_i/\partial\xi_j$, its inverse and its determinant. Derivatives use the chain rule $\partial/\partial x_i=(\partial\xi_j/\partial x_i)\,\partial/\partial\xi_j$. Integrals use $\det J$ <span class="tag">[DG 6.1.2]</span>. The inverse is calculated only at points, so on curved elements the integrals are approximate. The Guide states that over-integration can be necessary for highly curved elements. This applies to your NACA 0012 mesh near the leading edge.</p>
+</div></details>
+
+<details><summary>StdRegions and LocalRegions in full: reference and physical elements</summary><div>
+<p>StdRegions defines operators on seven reference shapes: segment, triangle, quadrilateral, tetrahedron, hexahedron, prism, pyramid. All are subsets of $[-1,1]^d$. Collapsed coordinates map triangles and tetrahedra to tensor products, so that sum factorisation applies to all shapes <span class="tag">[DG 5.1]</span> <span class="tag">[KS 3.2]</span>.</p>
+<p>The class hierarchy is <code>StdExpansion</code> → <code>StdExpansion1D/2D/3D</code> → <code>StdSegExp</code>, <code>StdQuadExp</code>, … Data members: <code>m_base</code> (array of bases), <code>m_ncoeffs</code>, <code>m_elmt_id</code>, matrix managers <span class="tag">[DG 5.2.1]</span>.</p>
+<p>The modified basis (Type I) is <span class="tag">[DG eq. 5.1]</span> <span class="tag">[KS 2.3.3]</span>:</p>
+<p>$$\phi_0=\frac{1-\xi}{2},\qquad \phi_1=\frac{1+\xi}{2},\qquad \phi_p=\frac{1-\xi}{2}\,\frac{1+\xi}{2}\,P^{1,1}_{p-2}(\xi),\;p\ge2 .$$</p>
+<p>Nektar++ stores the two vertex modes first and the interior (bubble) modes after them. This order differs from K&amp;S <span class="tag">[DG 5.2.6]</span>. At $\xi=-1$ only $\phi_0$ is nonzero; at $\xi=+1$ only $\phi_1$. Thus a 1D trace integral changes only the first two coefficients (see the trace in Section 3.6).</p>
+<p>LocalRegions: <code>Expansion</code> is-a <code>StdExpansion</code> and has-a <code>Geometry</code> (<code>m_geom</code>) and <code>GeomFactors</code> (<code>m_metricinfo</code>) <span class="tag">[DG 7.1–7.2]</span>. It uses the reference operators with the geometric factors. Example: <code>IProductWRTBase</code> on a <code>QuadExp</code> multiplies by $w_iJ_i$, then calls the reference inner product.</p>
+</div></details>
+
+<details><summary>Collections in full: one matrix product instead of many</summary><div>
+<p>A loop over elements that applies the same operator to each element is a loop of level-2 BLAS calls. If all elements in a group have the same shape, basis, order and points, the loop is one level-3 call: one basis matrix times a matrix whose columns are the coefficients of all elements. Collections makes these groups. There are reference-space collections and physical-space collections <span class="tag">[DG 8.1]</span>.</p>
+<p>The solver does not call Collections. <code>ExpList::BwdTrans</code>, <code>IProductWRTBase</code>, <code>IProductWRTDerivBase</code> and <code>PhysDeriv</code> use them internally. This is the origin of the exponent $b$ in your cost model: sum-factorised and dense-matrix operators scale differently with $P$.</p>
+</div></details>
+
+<details><summary>MultiRegions in full: fields, coefficients, physical values and the trace</summary><div>
+<p><code>ExpList</code> is a list of local expansions. <code>DisContField</code> is-a <code>ExpList</code> with no continuity between elements and with a trace: an <code>ExpList</code> of one dimension less that holds the element boundaries. <code>ContField</code> adds $C^0$ continuity and is not used by this solver <span class="tag">[DG 9.1–9.2, Fig. 9.3]</span>.</p>
+<p>Each field holds two arrays:</p>
+<ul><li><code>m_coeffs</code>: the modal coefficients of all elements, $\sum_eN^e$ values.</li>
+<li><code>m_phys</code>: the values at the quadrature points of all elements, $\sum_eQ^e$ values.</li></ul>
+<p><code>BwdTrans</code> goes from coefficients to physical values ($\mathbf u=\mathbf B\hat{\mathbf u}$). <code>FwdTrans</code> goes back by $L^2$ projection ($\hat{\mathbf u}=\mathbf M^{-1}\mathbf B^{\mathsf T}\Lambda(wJ)\mathbf u$).</p>
+<p>Trace operations:</p>
+<ul><li><code>GetFwdBwdTracePhys(phys, Fwd, Bwd)</code>: the values on each trace point from the two adjacent elements. On a domain boundary, the boundary-condition objects fill the exterior value.</li>
+<li><code>AddTraceIntegral(Fn, coeffs)</code>: adds $\int_{\Gamma^e}\phi_p\,\hat H_n$ to each element, with the sign of the element normal.</li>
+<li><code>MultiplyByElmtInvMass(in, out)</code>: applies $\mathbf M_e^{-1}$ element by element. In DG the mass matrix is block diagonal, so no global solve is necessary.</li></ul>
+</div></details>
+
+<details><summary>SolverUtils and the solver in full: class structure (Dev Guide Fig. 15.1)</summary><div>
+<p>Inheritance chain (is-a): <code>EulerCFE</code> / <code>NavierStokesCFE</code> → <code>CompressibleFlowSystem</code> → <code>AdvectionSystem</code> → <code>UnsteadySystem</code> → <code>EquationSystem</code> <span class="tag">[DG Fig. 15.1]</span>.</p>
+<p>Members (has-a) that the equation system makes from factories <span class="tag">[DG 15.4]</span>:</p>
+<ul><li><code>m_advObject</code>: <code>Advection</code> (for example <code>AdvectionWeakDG</code>), with a pointer to the flux function $\mathbf F$ and to the Riemann solver <code>m_riemann</code>.</li>
+<li><code>m_diffusion</code>: <code>Diffusion</code> (<code>DiffusionLDGNS</code> or <code>DiffusionIP</code>), with a pointer to the viscous flux $\mathbf G$. Only for Navier–Stokes.</li>
+<li><code>m_artificialDiffusion</code>: <code>ArtificialDiffusion</code>, for <code>ShockCaptureType = NonSmooth</code>.</li>
+<li><code>m_bndConds</code>: one <code>CFSBndCond</code> per boundary region.</li>
+<li><code>m_forcing</code>: list of <code>Forcing</code> objects.</li>
+<li><code>m_intScheme</code>: the <code>TimeIntegrationScheme</code>.</li></ul>
+<p>The equation system gives the flux functions and the physical models. The library operators calculate $\nabla\cdot\mathbf F$ and $\nabla\cdot\mathbf G$. A function pointer links the spatial operator $\mathcal L_\delta$ to the time integration <span class="tag">[DG 15.4]</span>.</p>
+<p>For the implicit solver, more objects are made: the Newton solver <code>NekNonlinSysNewton</code>, the GMRES solver <code>NekLinSysIterGMRES</code> and the preconditioner <code>PrecondCfsBRJ</code> <span class="tag">[DG Fig. 15.2]</span>.</p>
+</div></details>
+
+<!-- ======================= PART 3 ======================= -->
+<h2 id="p3">3. Execution sequence</h2>
+<p>This part follows one run from <code>main</code> to the output file. Each step gives the function, the space of its data (coefficients or physical values) and the equation that it calculates. Blue names are library functions. Orange marks are the positions where a stabilisation term can enter (Section 4).</p>
+
+<h3>3.1 Initialisation</h3>
+<pre class="tree">main()                                          <u>solvers/CompressibleFlowSolver/CompressibleFlowSolver.cpp</u>
+├─ <b>SessionReader::CreateInstance</b>(argc, argv)   read XML: SOLVERINFO, PARAMETERS, FUNCTIONS, BCs
+├─ <b>MeshGraphIO::Read</b>(session)                  Geometry for each element, partition for MPI
+├─ <b>GetDriverFactory().CreateInstance</b>("Standard")
+│   └─ Driver::v_InitObject
+│       └─ <b>GetEquationSystemFactory().CreateInstance</b>(EQType)     "EulerCFE" | "NavierStokesCFE" | …Implicit
+│           └─ v_InitObject chain (base first):
+│               EquationSystem::v_InitObject     m_fields[i] = DisContField, i = rho, rhou, (rhov, rhow), E
+│               UnsteadySystem::v_InitObject     TIMEINTEGRATIONSCHEME, TimeStep or CFL, filters
+│               AdvectionSystem::v_InitObject
+│               CompressibleFlowSystem::v_InitObject
+│               │  ├─ InitialiseParameters          Gamma, pInf, rhoInf, uInf, …
+│               │  ├─ VariableConverter, EquationOfState
+│               │  ├─ InitAdvection
+│               │  │   ├─ <b>GetAdvectionFactory</b>(AdvectionType)          → AdvectionWeakDG
+│               │  │   ├─ m_advObject->SetFluxVector(GetFluxVector)    F(U) at quadrature points
+│               │  │   └─ <b>GetRiemannSolverFactory</b>(UpwindType)      → Roe, HLLC, ExactToro, …
+│               │  ├─ <b>GetCFSBndCondFactory</b>() for each boundary region
+│               │  ├─ <i>ArtificialDiffusionFactory</i>(ShockCaptureType)   if "NonSmooth"           <i>◆ AV / SVV plugin</i>
+│               │  ├─ Forcing
+│               │  ├─ m_ode.DefineOdeRhs(DoOdeRhs)
+│               │  └─ m_ode.DefineProjection(DoOdeProjection)
+│               NavierStokesCFE::v_InitObject   (Navier–Stokes only)
+│                  └─ <b>GetDiffusionFactory</b>(DiffusionType)          → DiffusionLDGNS | DiffusionIP
+└─ drv->Execute()  → Section 3.2</pre>
+<p class="ref">[DG 15.4] gives the order "equation system made by factory → library operators → function pointer to time integration". [UG 9.3] gives the SOLVERINFO keys. Function names in the tree: [SRC?] and [PLAN].</p>
+
+<h3>3.2 Driver and time loop</h3>
+<pre class="tree">DriverStandard::v_Execute
+├─ PrintSummary
+├─ DoInitialise → SetInitialConditions
+│     evaluate FUNCTION "InitialConditions" at quadrature points        phys
+│     <b>FwdTrans</b> → m_coeffs                                              coeffs
+├─ DoSolve → UnsteadySystem::v_DoSolve
+│     for n = 0 … NumSteps-1:
+│        Δt = TimeStep, or from CFL: GetTimeStep (element estimate)           Section 3.5
+│        fields = m_intScheme-><b>TimeIntegrate</b>(n, Δt)
+│                  for each stage i:
+│                     DoOdeProjection(stage values)  → BCs, filters          <i>◆ filter</i>
+│                     DoOdeRhs(stage values)         → Section 3.3
+│        m_time += Δt
+│        copy fields → m_fields[i]->m_phys; FwdTrans when output is due
+│        Filters::Update; IO_InfoSteps; IO_CheckSteps (.chk)
+└─ Output (.fld); error norms if FUNCTION "ExactSolution" exists</pre>
+<p>For DG, the explicit solver advances the physical values. Thus the input and the output of <code>DoOdeRhs</code> are physical values. The implicit solver works on coefficients (the <code>…Coeff</code> functions of [DG Table 15.1]). <span class="tag">[SRC?]</span></p>
+<p class="warn">Your file <code>CylinderSubsonic_WeakDG_Implicit.xml</code> has <code>PROPERTY="AdvectioType"</code> (no "n"). The User Guide example has the same spelling. The solver reads <code>AdvectionType</code>, so this line has no effect and the default operator is used.</p>
+
+<h3>3.3 DoOdeRhs: the spatial operator $\mathcal L_\delta$</h3>
+<p>One call of <code>DoOdeRhs</code> calculates $d\mathbf U/dt$ at all quadrature points. The steps are:</p>
+<pre class="tree">CompressibleFlowSystem::DoOdeRhs(inarray[nVar][nPhys], outarray, t)
+│
+├─ 1  m_fields[i]-><b>GetFwdBwdTracePhys</b>(inarray[i], Fwd[i], Bwd[i])     trace values, both sides
+│
+├─ 2  DoAdvection → m_advObject->Advect(...)  = AdvectionWeakDG             Section 3.4
+│         returns  ∇·F  in weak form, physical values
+│
+├─ 3  Vmath::Neg(outarray)                     outarray = −∇·F
+│
+├─ 4  DoDiffusion(inarray, outarray, Fwd, Bwd)                               <i>◆ SVV term (RHS)</i>
+│     ├─ NavierStokesCFE: conservative → primitive (u, v, T)
+│     │   m_diffusion->Diffuse(...)          LDGNS or IP, Section 3.4 (b)
+│     │   outarray += ∇·G
+│     └─ m_artificialDiffusion->DoArtificialDiffusion(inarray, outarray)  if NonSmooth   <i>◆ AV</i>
+│
+├─ 5  Forcing: for each m_forcing → Apply(outarray)
+│
+└─ return outarray = −∇·F + ∇·G (+ AV + forcing)   at quadrature points</pre>
+<p class="ref">[DG 15.2] names the functions of steps 2 and 4. [PLAN] gives the files: CompressibleFlowSystem.cpp (DoOdeRhs, DoOdeProjection), NavierStokesCFE.cpp (v_DoDiffusion). The negation in step 3 matches the signs of eq. (15.2): the advection operator returns $+\nabla\cdot\mathbf F$. [SRC?]</p>
+
+<h3>3.4 Inside the operators</h3>
+<h4>(a) AdvectionWeakDG::Advect</h4>
+<div class="wrap"><table>
+<tr><th>#</th><th>Function</th><th>In → out</th><th>Calculates</th></tr>
+<tr><td>a1</td><td>m_fluxVector(inarray, flux) = <code>GetFluxVector</code></td><td>phys → phys [nVar][dim][nPhys]</td><td>$\mathbf F_j(\mathbf U_i)$ at each quadrature point (<code>AdvectVolumeFlux</code>)</td></tr>
+<tr><td>a2</td><td><code>IProductWRTDerivBase</code>(flux, tmp)</td><td>phys → coeffs</td><td>$\sum_j\mathbf B^{\mathsf T}\mathbf D_j^{\mathsf T}\Lambda(wJ)\mathbf F_j=(\nabla\phi_p,\mathbf F)$</td></tr>
+<tr><td>a3</td><td><code>GetFwdBwdTracePhys</code> (or the Fwd/Bwd from step 1)</td><td>phys → trace phys</td><td>$\mathbf U^-$, $\mathbf U^+$; boundary objects fill $\mathbf U^+$ on $\partial\Omega$</td></tr>
+<tr><td>a4</td><td>m_riemann-><code>Solve</code>(dim, Fwd, Bwd, numflux)</td><td>trace → trace</td><td>$\hat F_n(\mathbf U^-,\mathbf U^+,\mathbf n)$ (<code>AdvectTraceFlux</code>): rotate to the normal frame, 1D Riemann solver, rotate back</td></tr>
+<tr><td>a5</td><td><code>Vmath::Neg</code>(tmp)</td><td>coeffs</td><td>$-(\nabla\phi_p,\mathbf F)$</td></tr>
+<tr><td>a6</td><td><code>AddTraceIntegral</code>(numflux, tmp)</td><td>trace → coeffs</td><td>$-(\nabla\phi_p,\mathbf F)+\langle\phi_p,\hat F_n\rangle$</td></tr>
+<tr><td>a7</td><td><code>MultiplyByElmtInvMass</code>(tmp, tmp)</td><td>coeffs → coeffs</td><td>$\mathbf M^{-1}[\dots]$ = weak $\nabla\cdot\mathbf F$</td></tr>
+<tr><td>a8</td><td><code>BwdTrans</code>(tmp, outarray)</td><td>coeffs → phys</td><td>$\nabla\cdot\mathbf F$ at quadrature points</td></tr>
+</table></div>
+<p>After step 3 of <code>DoOdeRhs</code> ($\times(-1)$), the result is the right side of (15.2): $\mathbf M^{-1}[(\nabla\phi,\mathbf F)-\langle\phi,\hat F_n\rangle]$.</p>
+
+<h4>(b) Diffusion (LDGNS) and artificial diffusion</h4>
+<p>LDG writes the viscous term as a first-order system <span class="tag">[KS 10.5.1.2]</span>. Step 1 calculates the auxiliary variable $\mathbf q=\nabla\mathbf w$ (primitive variables $\mathbf w$) in weak form with a trace value $\hat{\mathbf w}$. Step 2 calculates $\mathbf G(\mathbf w,\mathbf q)$ at the quadrature points. Step 3 integrates $\nabla\cdot\mathbf G$ in weak form with a trace flux $\hat{\mathbf G}$ that has a penalty term:</p>
+<p>$$(\phi,\mathbf q)_e=-(\nabla\phi,\mathbf w)_e+\langle\phi,\hat{\mathbf w}\,\mathbf n\rangle_e,\qquad (\phi,\partial_t\mathbf U)_e\mathrel{+}=-(\nabla\phi,\mathbf G)_e+\langle\phi,\hat{\mathbf G}\cdot\mathbf n\rangle_e .$$</p>
+<p>The LDGNS penalty is inversely proportional to the element size. It is proportional to the local viscosity (momentum) and to the thermal conductivity (energy), times <code>LDGNSc11</code> (default 1) <span class="tag">[UG 9.3]</span>. The functions are <code>DiffuseCalcDerivative</code>, <code>DiffuseVolumeFlux</code>, <code>DiffuseTraceFlux</code>, and for IP also <code>AddDiffusionSymmFluxToCoeff</code> <span class="tag">[DG 15.2]</span>.</p>
+<p><code>NonSmooth</code> artificial diffusion uses the same LDG machinery on the conserved variables, with the flux $\varepsilon(\mathbf x)\nabla\mathbf U$ <span class="tag">[PLAN]</span>. Section 4.3 gives $\varepsilon$.</p>
+
+<h3>3.5 Time step</h3>
+<p>With <code>CFL</code> in PARAMETERS (your isentropic-vortex cases use <code>CFL = 0.02</code>, <code>TimeStep = 0</code>) <span class="tag">[XML]</span>, the solver calculates $\Delta t$ from an element estimate. The bound has the form of [KS 6.3.1, eq. 6.3.2]:</p>
+<p>$$\Delta t\le\frac{\alpha_{im}}{C(\mathbf V,h)\,P^2},\qquad \lambda_{\max}\approx c_\lambda\max|\mathbf V^{st}|\,P^2,$$</p>
+<p>where $\mathbf V^{st}$ is the velocity mapped to the reference element and $c_\lambda\approx0.2$ <span class="tag">[KS 6.3.1]</span>. For the Euler equations the speed is $|\mathbf u|+c$. The example program in Section 3.6 uses $\Delta t=\text{CFL}\cdot h/((2P+1)\lambda_{\max})$, the form that your cost notes give. The exact element formula is in <code>GetTimeStep</code> <span class="tag">[SRC?]</span>.</p>
+
+<h3>3.6 Worked example: one DoOdeRhs call in 1D</h3>
+<p>The program <code>cfs1d.cpp</code> (Section 5) is a 1D copy of the explicit path. It uses the same function names, the same basis (<code>Modified_A</code>), the same points (GLL, $Q=P+2$), the same order of operations and a Lax–Friedrichs or Roe Riemann solver. The case is a density wave: $\rho=1+0.2\sin\pi x$, $u=1$, $p=1$ on $[-1,1]$, periodic. The exact solution is the same wave moving at speed 1.</p>
+<p><b>Configuration for the trace:</b> 2 elements, $P=2$ (3 modes: $\phi_0,\phi_1$ vertex, $\phi_2$ bubble), $Q=4$, Lax–Friedrichs, $t=0$. The table follows the density component through one call.</p>
+<div class="wrap"><table class="num">
+<tr><td style="text-align:left">step</td><td style="text-align:left">quantity</td><td colspan="4" style="text-align:center">element 0, $x\in[-1,0]$</td><td colspan="4" style="text-align:center">element 1, $x\in[0,1]$</td></tr>
+<tr><td style="text-align:left"></td><td style="text-align:left">$x_q$</td><td>−1</td><td>−0.7236</td><td>−0.2764</td><td>0</td><td>0</td><td>0.2764</td><td>0.7236</td><td>1</td></tr>
+<tr><td style="text-align:left">IC</td><td style="text-align:left">$\rho$ (phys)</td><td>1.000000</td><td>0.847352</td><td>0.847352</td><td>1.000000</td><td>1.000000</td><td>1.152648</td><td>1.152648</td><td>1.000000</td></tr>
+<tr><td style="text-align:left">a1</td><td style="text-align:left">$F_\rho=\rho u$</td><td>1.000000</td><td>0.847352</td><td>0.847352</td><td>1.000000</td><td>1.000000</td><td>1.152648</td><td>1.152648</td><td>1.000000</td></tr>
+<tr><td style="text-align:left">a2</td><td style="text-align:left">$(\phi_p',F_\rho)$, modes 0, 1, 2</td><td>−0.872793</td><td>0.872793</td><td>0</td><td></td><td>−1.127207</td><td>1.127207</td><td>0</td><td></td></tr>
+<tr><td style="text-align:left">a3</td><td style="text-align:left">Fwd / Bwd at $x=-1(\equiv1)$ and $x=0$</td><td colspan="8" style="text-align:center">1.000000 / 1.000000 at both traces</td></tr>
+<tr><td style="text-align:left">a4</td><td style="text-align:left">$\hat F_\rho$</td><td colspan="8" style="text-align:center">1.000000 at both traces</td></tr>
+<tr><td style="text-align:left">a5–a6</td><td style="text-align:left">$-(\phi',F)+\langle\phi,\hat F n\rangle$</td><td>−0.127207</td><td>0.127207</td><td>0</td><td></td><td>0.127207</td><td>−0.127207</td><td>0</td><td></td></tr>
+<tr><td style="text-align:left">a7–a8</td><td style="text-align:left">$\nabla\cdot F$ (phys)</td><td>−0.763241</td><td>−0.341332</td><td>0.341332</td><td>0.763241</td><td>0.763241</td><td>0.341332</td><td>−0.341332</td><td>−0.763241</td></tr>
+<tr><td style="text-align:left">3</td><td style="text-align:left">$d\rho/dt$</td><td>0.763241</td><td>0.341332</td><td>−0.341332</td><td>−0.763241</td><td>−0.763241</td><td>−0.341332</td><td>0.341332</td><td>0.763241</td></tr>
+<tr><td style="text-align:left"></td><td style="text-align:left">exact $-\partial_x(\rho u)$</td><td>0.628319</td><td>0.405965</td><td>−0.405965</td><td>−0.628319</td><td>−0.628319</td><td>−0.405965</td><td>0.405965</td><td>0.628319</td></tr>
+</table></div>
+<p>Observations:</p>
+<ul><li>Step a2 gives zero for the bubble mode $\phi_2$. The flux is symmetric about the element centre and $\phi_2'$ is odd.</li>
+<li>Step a6 changes only modes 0 and 1. With <code>Modified_A</code>, only $\phi_0$ is nonzero at $\xi=-1$ and only $\phi_1$ at $\xi=+1$.</li>
+<li>The two elements give values of opposite sign that sum to zero. This is the conservation property of Section 1.2: $\frac{d}{dt}\int\rho=0$ on a periodic domain.</li>
+<li>With two elements of degree 2, the result differs from the exact derivative by the projection error. The convergence test shows that this error decreases at the expected rate.</li></ul>
+
+<figure><svg id="figconv" viewBox="0 0 720 300" role="img" aria-label="Convergence of the 1D weak DG Euler program"></svg>
+<figcaption>Maximum density error at $t=1$ (half a period) for the density wave, RK4, CFL $=0.2$, $N_e=8$ and $16$. The observed order $\log_2(e_8/e_{16})$ is close to $P+1$ for both Riemann solvers.</figcaption></figure>
+<div class="wrap"><table class="num">
+<tr><td style="text-align:left">P</td><td>LF, 8</td><td>LF, 16</td><td>order</td><td>Roe, 8</td><td>Roe, 16</td><td>order</td></tr>
+<tr><td style="text-align:left">1</td><td>1.26e-2</td><td>3.53e-3</td><td>1.84</td><td>1.41e-2</td><td>4.45e-3</td><td>1.67</td></tr>
+<tr><td style="text-align:left">2</td><td>1.93e-3</td><td>2.92e-4</td><td>2.72</td><td>1.51e-3</td><td>1.99e-4</td><td>2.93</td></tr>
+<tr><td style="text-align:left">3</td><td>6.85e-5</td><td>4.12e-6</td><td>4.05</td><td>8.62e-5</td><td>5.52e-6</td><td>3.97</td></tr>
+<tr><td style="text-align:left">4</td><td>5.07e-6</td><td>1.87e-7</td><td>4.76</td><td>3.78e-6</td><td>1.25e-7</td><td>4.92</td></tr>
+<tr><td style="text-align:left">5</td><td>1.10e-7</td><td>1.65e-9</td><td>6.06</td><td>1.32e-7</td><td>2.16e-9</td><td>5.93</td></tr></table></div>
+
+<h3>3.7 Implicit path</h3>
+<p>The implicit equation systems (<code>EulerImplicitCFE</code>, <code>NavierStokesImplicitCFE</code>) use the same spatial operator in coefficient form. The time loop calls the Newton–Krylov solver at each implicit stage <span class="tag">[DG Table 15.2]</span>:</p>
+<pre class="tree">Initialisation                                         CompressibleFlowSolver
+Time step loop n                                       UnsteadySystem
+   Runge–Kutta (DIRK) stage m = 1 … M                  TimeIntegrationScheme
+      source term s^(m)                                TimeIntegrationScheme
+      Newton iteration l                               NekNonlinSysNewton
+         residual N(ū_l)            (15.9)             CFSImplicit  NonlinSysEvaluatorCoeff1D → DoOdeRhsCoeff
+         GMRES iteration k                             NekLinSysIterGMRES
+            search vector q_k
+            BRJ iteration j = 1 … J                    PrecondCfsBRJ
+               q̂_j = D̂⁻¹ (q_k − (L̂ + Û) q̂_{j−1})        CFSImplicit  PreconCoeff
+            ∂N/∂u · q̂_J              (15.12)            CFSImplicit  MatrixMultiplyMatrixFreeCoeff
+            linear residual                            NekLinSysIterGMRES
+         ū_{l+1} = ū_l + Σ c_k q_k                     NekLinSysIterGMRES
+   u^{n+1}                                             TimeIntegrationScheme
+Output and finalisation                                CompressibleFlowSolver</pre>
+<p>Each Jacobian–vector product costs one more evaluation of $\mathcal L_\delta$. Thus any term that you add to the explicit right side must also exist in the coefficient-space right side, or the implicit solver does not see it. Your plan names this path: <code>v_DoArtificialDiffusionCoeff</code> / <code>DiffuseCoeffs</code> <span class="tag">[PLAN]</span>.</p>
+
+<h3>3.8 Array sizes and verification commands</h3>
+<div class="wrap"><table>
+<tr><th>Array</th><th>Shape</th><th>2D quad mesh, $N_e$ elements, $P$, $Q=P+2$</th></tr>
+<tr><td>inarray, outarray of DoOdeRhs</td><td>[nVar][nPhys]</td><td>nVar = 4, nPhys = $N_e(P+2)^2$</td></tr>
+<tr><td>m_coeffs of one field</td><td>[nCoeffs]</td><td>$N_e(P+1)^2$</td></tr>
+<tr><td>flux vector</td><td>[nVar][dim][nPhys]</td><td>$4\times2\times N_e(P+2)^2$</td></tr>
+<tr><td>Fwd, Bwd, numflux</td><td>[nVar][nTracePts]</td><td>edge points of all traces</td></tr></table></div>
+<p>Run these commands in the Nektar++ 5.10 source tree to check the <span class="tag">[SRC?]</span> items:</p>
+<pre class="tree">grep -n "DoOdeRhs\|DoOdeProjection\|Vmath::Neg" solvers/CompressibleFlowSolver/EquationSystems/CompressibleFlowSystem.cpp
+grep -n "IProductWRTDerivBase\|AddTraceIntegral\|MultiplyByElmtInvMass\|BwdTrans" library/SolverUtils/Advection/AdvectionWeakDG.cpp
+grep -n "v_DoDiffusion\|DoArtificialDiffusion" solvers/CompressibleFlowSolver/EquationSystems/*.cpp
+grep -n "GetTimeStep\|GetElmtTimeStep" solvers/CompressibleFlowSolver/EquationSystems/CompressibleFlowSystem.cpp
+grep -rn "ExponentialFilter" solvers/CompressibleFlowSolver/</pre>
+
+<!-- ======================= PART 4 ======================= -->
+<h2 id="p4">4. Stabilisation and the SVV insertion point</h2>
+<p>A high-order DG solution of a transonic flow has two problems: Gibbs oscillations at shocks, and aliasing from the nonlinear fluxes when the mesh does not resolve all scales <span class="tag">[KS 6.5]</span>. CompressibleFlowSolver has five mechanisms against them. None of them is SVV.</p>
+
+<h3>4.1 Riemann-solver dissipation</h3>
+<p>The numerical flux adds dissipation proportional to the jump at the interface. For Lax–Friedrichs:</p>
+<p>$$\hat F_n=\tfrac12\big(\mathbf F(\mathbf U^-)+\mathbf F(\mathbf U^+)\big)\cdot\mathbf n-\tfrac12\lambda_{\max}(\mathbf U^+-\mathbf U^-).$$</p>
+<p>For Roe, the dissipation is $\tfrac12|\mathbf A|(\mathbf U^+-\mathbf U^-)$ with $|\mathbf A|=\mathbf R|\mathbf D|\mathbf L$, the characteristic decomposition of K&amp;S App. E. The jump is small for resolved modes and large for unresolved modes. Thus upwind DG has a built-in dissipation of high modes. Your notes state that the solver has no turbulence closure: it is DNS when resolved and implicit LES when under-resolved, with dissipation from this flux, from AV and from filtering.</p>
+
+<h3>4.2 Dealiasing</h3>
+<p>Aliasing occurs when nonlinear terms are calculated with too few quadrature points <span class="tag">[KS 2.4.1.2]</span>. Two sources exist: the PDE (fluxes) and the geometry (curved elements). The User Guide gives $Q_{\min}$ (eq. 9.13, Section 1.4 above). You increase <code>NUMPOINTS</code> in the expansion to apply it. The keyword <code>SPECTRALHPDEALIASING</code> exists in the incompressible solver <span class="tag">[UG 11.3.5.1]</span>. Your plan lists it as a baseline key <span class="tag">[PLAN]</span>.</p>
+
+<h3>4.3 NonSmooth artificial viscosity (Persson–Peraire)</h3>
+<p>The Euler system gets a Laplacian term $\nabla\cdot(\varepsilon\nabla\mathbf U)$ on the right side. $\varepsilon$ is constant in each element and discontinuous between elements <span class="tag">[UG 9.4.1.1]</span>:</p>
+<p>$$\varepsilon=\varepsilon_0\,\frac{h}{p}\,\lambda_{\max}\,S_\varepsilon\quad(9.8).$$</p>
+<p>The modal sensor compares the full and truncated expansions of the density <span class="tag">[UG eqs. 9.9–9.11]</span>:</p>
+<p>$$s_e=\log_{10}\frac{\langle q-\tilde q,\,q-\tilde q\rangle}{\langle q,q\rangle},\qquad q=\sum_{i=1}^{N(P)}\hat q_i\phi_i,\quad \tilde q=\sum_{i=1}^{N(P-1)}\hat q_i\phi_i,$$</p>
+<p>$$S_\varepsilon=\begin{cases}0 & s_e&lt;s_0-\kappa\\ \tfrac12\Big(1+\sin\dfrac{\pi(s_e-s_0)}{2\kappa}\Big) & |s_e-s_0|\le\kappa\\ 1 & s_e&gt;s_0+\kappa\end{cases},\qquad s_0=s_\kappa-4.25\log_{10}p .$$</p>
+<p>Parameters: <code>Skappa</code> ($s_\kappa$, example −1.3), <code>Kappa</code> ($\kappa$, 0.2), <code>mu0</code> ($\varepsilon_0$, 1.0). This option exists only for the explicit solvers <span class="tag">[UG 9.3, 9.4.1]</span>. The sensor measures the energy in the highest mode set. SVV acts on the same high modes but without a switch.</p>
+<figure><svg id="figsensor" viewBox="0 0 720 230" role="img" aria-label="Persson-Peraire sensor function"></svg>
+<figcaption>Sensor $S_\varepsilon(s_e)$ (9.11) for $s_\kappa=-1.3$, $\kappa=0.2$ and $P=2,4,8$. A higher $P$ moves the switch to lower $s_e$ (shift $-4.25\log_{10}P$).</figcaption></figure>
+
+<h3>4.4 Physical artificial viscosity</h3>
+<p><code>ShockCaptureType = Physical</code> adds the artificial viscosity to the physical viscosity. It exists only for the Navier–Stokes systems (explicit and implicit). The sensor is <code>Modal</code> (default) or <code>Dilatation</code>. <code>DucrosSensor = On</code> removes the viscosity where vorticity is large. <code>Smoothing = C0</code> makes $\varepsilon$ continuous <span class="tag">[UG 9.3]</span>. Your shock-tube tests use <code>Physical</code> + <code>Dilatation</code> + <code>DucrosSensor</code> with IP diffusion <span class="tag">[XML]</span>.</p>
+
+<h3>4.5 Exponential filter</h3>
+<p>The filter multiplies the modal coefficients of each element by a factor that decreases with the mode number. It is applied in <code>DoOdeProjection</code>, after the stage values are known <span class="tag">[PLAN]</span>. The keys are <code>ExponentialFiltering</code>, <code>FilterAlpha</code>, <code>FilterExponent</code>, <code>FilterCutoff</code> <span class="tag">[PLAN]</span>. The usual form is</p>
+<p>$$\sigma(\eta)=\begin{cases}1&\eta\le\eta_c\\ \exp\!\Big(-\alpha\Big(\dfrac{\eta-\eta_c}{1-\eta_c}\Big)^{s}\Big)&\eta&gt;\eta_c\end{cases},\qquad \eta=\frac{k}{P}.$$</p>
+<p>Check the exact expression in <code>StdExpansion::ExponentialFilter</code> <span class="tag">[SRC?]</span>. A filter applied at each stage acts as a dissipation whose strength depends on $\Delta t$ (the number of applications per unit time). K&amp;S Section 6.5.1 shows that the Vandeven filter recovers accuracy away from a discontinuity, but gives no improvement for linear advection of a square wave.</p>
+
+<h3>4.6 SVV in Nektar++ today</h3>
+<p>SVV exists in the incompressible solver and in the ADR solver, not in CompressibleFlowSolver <span class="tag">[UG 11.3.5.2]</span>:</p>
+<div class="wrap"><table>
+<tr><th>SOLVERINFO <code>SpectralVanishingViscosity</code></th><th>Kernel</th><th>Parameters</th></tr>
+<tr><td><code>True</code></td><td>Exponential (Maday et al.)</td><td><code>SVVCutOffRatio</code>, <code>SVVDiffCoeff</code> (scaled by $h/p$)</td></tr>
+<tr><td><code>PowerKernel</code></td><td>smooth, no cut-off; narrower band for higher $P$ (Moura et al.)</td><td>cut-off ratio = power ratio</td></tr>
+<tr><td><code>DGKernel</code></td><td>recommended for spectral/hp; default coefficient 1</td><td><code>SVVDiffCoeff</code></td></tr></table></div>
+<p>The kernel code is in StdRegions: <code>v_SVVLaplacianFilter</code> (StdQuadExp.cpp and the other shapes), with the constants <code>eFactorSVVCutoffRatio</code>, <code>eFactorSVVDiffCoeff</code>, <code>eFactorSVVPowerKerDiffCoeff</code>, <code>eFactorSVVDGKerDiffCoeff</code> <span class="tag">[PLAN]</span>. The incompressible solver is implicit in the viscous term. It adds SVV as a factor of the Helmholtz matrix (<code>SetUpSVV</code>, <code>AppendSVVFactors</code>). The explicit compressible solver has no matrix. Thus SVV must enter as a right-side term or as a filter <span class="tag">[PLAN: SVVOperator.h]</span>.</p>
+
+<h3>4.7 SVV operator</h3>
+<p>Tadmor's SVV adds a viscosity that acts only on high modes <span class="tag">[KS 6.5.2, eq. 6.5.8]</span>:</p>
+<p>$$\partial_t\mathbf U+\nabla\cdot\mathbf F=\nabla\cdot\big(\varepsilon_{SVV}\,\mathcal Q[\nabla\mathbf U]\big),\qquad \widehat{(\mathcal Q v)}_k=\hat Q_k\,\hat v_k .$$</p>
+<p>$\hat Q_k$ is applied to the modal coefficients in an orthogonal basis of each element. The exponential kernel of your skeleton (<code>SVVExpKernel::v_GetKernel</code>) is</p>
+<p>$$\hat Q_k=\begin{cases}0 & k\le M\\ \exp\!\Big(-\dfrac{(k-P)^2}{(k-M)^2}\Big)&k&gt;M\end{cases},\qquad M=\lfloor c_{cut}\,P\rfloor .$$</p>
+<p>In weak DG form the term uses the LDG steps of Section 3.4 (b), with the kernel applied to the auxiliary variable:</p>
+<ol><li>$\mathbf q=\nabla\mathbf U$ in weak form (trace value $\hat{\mathbf U}$).</li>
+<li>For each element: transform $\mathbf q$ to the orthogonal basis, multiply mode $k$ by $\varepsilon_{SVV}\hat Q_k$, transform back. The result is $\mathbf G_{SVV}$.</li>
+<li>$(\phi,\partial_t\mathbf U)\mathrel{+}=-(\nabla\phi,\mathbf G_{SVV})+\langle\phi,\hat{\mathbf G}_{SVV}\cdot\mathbf n\rangle$.</li></ol>
+<p>This is the change that your plan states: "instead of <code>viscousTensor = mu(x)·qfield</code>, per element FwdTrans orthogonal of qfield $\rightarrow$ scale mode $k$ by $\varepsilon\,\hat Q_k$ $\rightarrow$ BwdTrans" <span class="tag">[PLAN]</span>.</p>
+<figure><svg id="figkernel" viewBox="0 0 720 230" role="img" aria-label="SVV exponential kernel"></svg>
+<figcaption>Exponential SVV kernel $\hat Q_k$ against $k/P$ for $c_{cut}=0.5$ and $P=4,8,16$. Modes with $k\le M$ have no viscosity.</figcaption></figure>
+
+<h3>4.8 Insertion points</h3>
+<p>The sequence of Section 3 has four positions where the SVV term can enter:</p>
+<div class="wrap"><table>
+<tr><th>Option</th><th>Position in the sequence</th><th>Works for</th><th>Consequence</th></tr>
+<tr><td>I1. ArtificialDiffusion plugin <code>"SVV"</code></td><td>DoOdeRhs step 4: <code>m_artificialDiffusion-&gt;DoArtificialDiffusion</code></td><td>EulerCFE and NavierStokesCFE (explicit)</td><td>Reuses the factory and the LDG operator on conserved variables. Only <code>GetFluxVector</code> changes. Needs the coefficient version for the implicit path. [PLAN 3]</td></tr>
+<tr><td>I2. <code>SVVOperator</code> in <code>NavierStokesCFE::v_DoDiffusion</code></td><td>DoOdeRhs step 4, after the physical viscous term</td><td>NavierStokesCFE only</td><td>Separate session key (<code>SVVType</code>). EulerCFE needs a second hook. [PLAN 01 3.1]</td></tr>
+<tr><td>I3. Filter in <code>DoOdeProjection</code></td><td>before each DoOdeRhs (Section 3.2)</td><td>all systems</td><td>Simple and cheap, but it is a spectral filter, not SVV. The dissipation depends on $\Delta t$. [PLAN: SVVOperator.h option B]</td></tr>
+<tr><td>I4. Implicit residual</td><td><code>DoOdeRhsCoeff</code> inside $\mathbf N(\mathbf u)$ (Section 3.7)</td><td>implicit systems</td><td>Automatic if I1 or I2 has a coefficient-space version. The Jacobian–vector product then includes SVV.</td></tr></table></div>
+<p>Two decisions stay open and need a justification in the thesis <span class="tag">[decidir]</span>:</p>
+<ul><li>The scale of $\varepsilon_{SVV}$. The Euler equations have no physical viscosity. Two candidates: $\varepsilon_{SVV}=c\,\frac{h}{P}\lambda_{\max}$, which matches the AV form (9.8) and the $h/p$ scaling of the incompressible SVV; or $\frac{h}{P+1}(|\mathbf u|+c)$ as a local value.</li>
+<li>The variables. The kernel can act on the conserved, primitive or entropy variables. The plugin I1 acts on the conserved variables, like <code>NonSmooth</code>.</li></ul>
+
+<h3>4.9 Result of the 1D program: SVV on the Sod tube</h3>
+<p><code>cfs1d.cpp</code> has option I1 in 1D: the term $\partial_x(\varepsilon_{SVV}\mathcal Q[\partial_x\mathbf U])$ with central trace values (BR1), the exponential kernel with $c_{cut}=0.5$ and $\varepsilon_{SVV}=c\,\frac{h}{P}\lambda_{\max}$. Configuration: Sod tube, 40 elements, $P=4$, Roe flux, RK4, $t=0.2$. The SVV flux is zero at the two domain ends.</p>
+<div class="wrap"><table class="num">
+<tr><td style="text-align:left">SVVDiffCoeff $c$</td><td>result</td><td>$\max\rho$</td><td>$\min\rho$</td><td>$\mathrm{TV}(\rho)$</td></tr>
+<tr><td style="text-align:left">0 (no stabilisation)</td><td>fails, $t=0.0031$</td><td></td><td></td><td></td></tr>
+<tr><td style="text-align:left">0.25</td><td>fails, $t=0.0123$</td><td></td><td></td><td></td></tr>
+<tr><td style="text-align:left">0.5</td><td>$t=0.2$</td><td>1.0128</td><td>0.1137</td><td>1.648</td></tr>
+<tr><td style="text-align:left">1.0</td><td>$t=0.2$</td><td>1.0150</td><td>0.1108</td><td>1.691</td></tr>
+<tr><td style="text-align:left">exact</td><td></td><td>1</td><td>0.125</td><td>0.875</td></tr></table></div>
+<figure><svg id="figsod" viewBox="0 0 720 300" role="img" aria-label="Sod density profile with SVV"></svg>
+<figcaption>Density at $t=0.2$, SVVDiffCoeff $c=0.5$, $P=4$, $N_e=40$ (dots at quadrature points) against the exact solution (line).</figcaption></figure>
+<p>Three results are relevant for the transonic case:</p>
+<ul><li>Without stabilisation, $P=4$ fails in a few time steps. SVV with $c\ge0.5$ makes the run complete.</li>
+<li>SVV does not remove the oscillations. The total variation is about twice the exact value, and there are under- and overshoots at the contact and the shock. SVV without a sensor acts on all elements with the same strength. A shock needs much more dissipation than the resolved flow. Thus SVV for the NACA 0012 shock probably needs a sensor or a combination with AV.</li>
+<li>An explicit SVV term adds a viscous time-step limit, of order $h^2/(\varepsilon_{SVV}(P+1)^4)$. The program uses the smaller of the two limits.</li></ul>
+<p class="warn">The program is a model of the sequence, not of Nektar++. Its SVV boundary closure (zero flux) is the author's choice. With $c\ge2$ it gives errors near the right end. Nektar++ boundary conditions for the diffusion operators are different.</p>
+
+<!-- ======================= PART 5 ======================= -->
+<h2 id="p5">5. Program and references</h2>
+<p>Build and run:</p>
+<pre class="tree">g++ -O2 -std=c++17 cfs1d.cpp -o cfs1d
+./cfs1d trace     # Section 3.6 table
+./cfs1d conv      # Section 3.6 convergence
+./cfs1d sod       # Section 4.9 table
+./cfs1d profile   # Section 4.9 figure data</pre>
+<details class="code"><summary>cfs1d.cpp — 1D Euler, weak DG, CompressibleFlowSolver call sequence<span>~450 lines</span></summary><pre><code>// cfs1d.cpp — 1D Euler, weak DG, same call sequence as Nektar++ CompressibleFlowSolver
+// (EulerCFE, AdvectionWeakDG, LaxFriedrichs or Roe Riemann solver, explicit RK4).
+// Names follow Nektar++ functions so the trace can be compared line by line.
+#include &lt;algorithm&gt;
+#include &lt;cmath&gt;
+#include &lt;cstdio&gt;
+#include &lt;cstring&gt;
+#include &lt;functional&gt;
+#include &lt;string&gt;
+#include &lt;vector&gt;
+
+using Vec = std::vector&lt;double&gt;;
+using Mat = std::vector&lt;Vec&gt;;
+const double PI = std::acos(-1.0), GAMMA = 1.4;
+
+// ---------------- LibUtilities::Foundations (Points, Basis) ----------------
+double Jacobi(int n, double a, double b, double x)            // P_n^{a,b}(x)
+{
+    if (n == 0) return 1.0;
+    double p0 = 1.0, p1 = 0.5 * (a - b + (a + b + 2) * x);
+    for (int k = 2; k &lt;= n; ++k)
+    {
+        double c = 2 * k + a + b;
+        double a1 = 2 * k * (k + a + b) * (c - 2);
+        double a2 = (c - 1) * (a * a - b * b);
+        double a3 = (c - 2) * (c - 1) * c;
+        double a4 = 2 * (k + a - 1) * (k + b - 1) * c;
+        double p2 = ((a2 + a3 * x) * p1 - a4 * p0) / a1;
+        p0 = p1; p1 = p2;
+    }
+    return p1;
+}
+double dJacobi(int n, double a, double b, double x)
+{
+    return n == 0 ? 0.0 : 0.5 * (n + a + b + 1) * Jacobi(n - 1, a + 1, b + 1, x);
+}
+
+// Gauss-Lobatto-Legendre points and weights (eGaussLobattoLegendre), Q points
+void GLL(int Q, Vec &amp;z, Vec &amp;w)
+{
+    int N = Q - 1;
+    z.assign(Q, 0); w.assign(Q, 0);
+    for (int i = 0; i &lt; Q; ++i)
+    {
+        double x = -std::cos(PI * i / N);
+        for (int it = 0; it &lt; 100; ++it)
+        {
+            double PN = Jacobi(N, 0, 0, x), PNm1 = Jacobi(N - 1, 0, 0, x);
+            double dx = (x * PN - PNm1) / (Q * PN);
+            x -= dx;
+            if (std::abs(dx) &lt; 1e-16) break;
+        }
+        z[i] = x;
+        double PN = Jacobi(N, 0, 0, x);
+        w[i] = 2.0 / (N * (N + 1) * PN * PN);
+    }
+}
+
+// Modified_A basis: phi_0 = (1-x)/2, phi_1 = (1+x)/2, phi_p = (1-x)(1+x)/4 P^{1,1}_{p-2}
+double phi(int p, double x)
+{
+    if (p == 0) return 0.5 * (1 - x);
+    if (p == 1) return 0.5 * (1 + x);
+    return 0.25 * (1 - x) * (1 + x) * Jacobi(p - 2, 1, 1, x);
+}
+double dphi(int p, double x)
+{
+    if (p == 0) return -0.5;
+    if (p == 1) return 0.5;
+    return -0.5 * x * Jacobi(p - 2, 1, 1, x) + 0.25 * (1 - x * x) * dJacobi(p - 2, 1, 1, x);
+}
+
+Mat inverse(Mat M)
+{
+    int N = M.size();
+    Mat I(N, Vec(N, 0));
+    for (int i = 0; i &lt; N; ++i) I[i][i] = 1;
+    for (int k = 0; k &lt; N; ++k)
+    {
+        int p = k;
+        for (int r = k + 1; r &lt; N; ++r) if (std::abs(M[r][k]) &gt; std::abs(M[p][k])) p = r;
+        std::swap(M[k], M[p]); std::swap(I[k], I[p]);
+        double d = M[k][k];
+        for (int j = 0; j &lt; N; ++j) { M[k][j] /= d; I[k][j] /= d; }
+        for (int r = 0; r &lt; N; ++r)
+        {
+            if (r == k) continue;
+            double m = M[r][k];
+            for (int j = 0; j &lt; N; ++j) { M[r][j] -= m * M[k][j]; I[r][j] -= m * I[k][j]; }
+        }
+    }
+    return I;
+}
+
+// ---------------- StdRegions / LocalRegions: one segment ----------------
+struct SegExp
+{
+    int ncoeffs, nq;
+    double J;                 // dx/dxi = h/2 (SpatialDomains::GeomFactors)
+    Vec z, w;
+    Mat B, DB, Minv;          // B[q][p] = phi_p(z_q)
+
+    SegExp(int P, int Q, double h) : ncoeffs(P + 1), nq(Q), J(0.5 * h)
+    {
+        GLL(Q, z, w);
+        B.assign(Q, Vec(ncoeffs)); DB = B;
+        for (int q = 0; q &lt; Q; ++q)
+            for (int p = 0; p &lt; ncoeffs; ++p) { B[q][p] = phi(p, z[q]); DB[q][p] = dphi(p, z[q]); }
+        Mat M(ncoeffs, Vec(ncoeffs, 0));                       // M = B^T Lambda(wJ) B
+        for (int p = 0; p &lt; ncoeffs; ++p)
+            for (int r = 0; r &lt; ncoeffs; ++r)
+                for (int q = 0; q &lt; Q; ++q) M[p][r] += B[q][p] * w[q] * J * B[q][r];
+        Minv = inverse(M);
+    }
+    Vec BwdTrans(const Vec &amp;c) const
+    {
+        Vec u(nq, 0);
+        for (int q = 0; q &lt; nq; ++q) for (int p = 0; p &lt; ncoeffs; ++p) u[q] += B[q][p] * c[p];
+        return u;
+    }
+    Vec IProductWRTBase(const Vec &amp;f) const                   // B^T Lambda(wJ) f
+    {
+        Vec r(ncoeffs, 0);
+        for (int p = 0; p &lt; ncoeffs; ++p) for (int q = 0; q &lt; nq; ++q) r[p] += B[q][p] * w[q] * J * f[q];
+        return r;
+    }
+    Vec IProductWRTDerivBase(const Vec &amp;f) const              // (dphi/dx, f) = DB^T Lambda(w) f
+    {
+        Vec r(ncoeffs, 0);
+        for (int p = 0; p &lt; ncoeffs; ++p) for (int q = 0; q &lt; nq; ++q) r[p] += DB[q][p] * w[q] * f[q];
+        return r;
+    }
+    Vec MultiplyByElmtInvMass(const Vec &amp;c) const
+    {
+        Vec r(ncoeffs, 0);
+        for (int p = 0; p &lt; ncoeffs; ++p) for (int s = 0; s &lt; ncoeffs; ++s) r[p] += Minv[p][s] * c[s];
+        return r;
+    }
+    Vec FwdTrans(const Vec &amp;u) const { return MultiplyByElmtInvMass(IProductWRTBase(u)); }
+};
+
+// ---------------- MultiRegions::DisContField (1D, uniform mesh) ----------------
+struct DisContField
+{
+    int ne; bool periodic; double x0, h;
+    SegExp exp;
+    DisContField(int ne_, int P, double a, double b, bool per)
+        : ne(ne_), periodic(per), x0(a), h((b - a) / ne_), exp(P, P + 2, (b - a) / ne_) {}
+    int nTrace() const { return periodic ? ne : ne + 1; }
+    double xq(int e, int q) const { return x0 + h * e + exp.J * (exp.z[q] + 1); }
+
+    // trace k sits at x0 + k h; Fwd = left element (normal +x points out of it), Bwd = right element
+    void GetFwdBwdTracePhys(const std::vector&lt;Vec&gt; &amp;phys, Vec &amp;Fwd, Vec &amp;Bwd) const
+    {
+        int nt = nTrace(), Q = exp.nq;
+        Fwd.assign(nt, 0); Bwd.assign(nt, 0);
+        for (int k = 0; k &lt; nt; ++k)
+        {
+            int eL = k - 1, eR = k;
+            if (periodic) { eL = (k - 1 + ne) % ne; eR = k % ne; }
+            if (eL &lt; 0) eL = -1;
+            if (eR &gt;= ne) eR = -1;
+            Fwd[k] = eL &gt;= 0 ? phys[eL][Q - 1] : phys[eR][0];   // outflow (copy) boundary
+            Bwd[k] = eR &gt;= 0 ? phys[eR][0] : phys[eL][Q - 1];
+        }
+    }
+    // adds the trace integral &lt;phi, Fn n&gt;: +phi(+1)Fn at right end, -phi(-1)Fn at left end
+    void AddTraceIntegral(const Vec &amp;Fn, std::vector&lt;Vec&gt; &amp;coeffs) const
+    {
+        int nt = nTrace();
+        for (int e = 0; e &lt; ne; ++e)
+        {
+            int kL = e, kR = periodic ? (e + 1) % nt : e + 1;
+            coeffs[e][1] += Fn[kR];   // Modified_A: only phi_1 is nonzero at xi = +1
+            coeffs[e][0] -= Fn[kL];   // only phi_0 is nonzero at xi = -1
+        }
+    }
+};
+
+// ---------------- CompressibleFlowSolver (EulerCFE) ----------------
+using Field = std::vector&lt;std::vector&lt;Vec&gt;&gt;;     // [variable][element][point or mode]
+struct EulerCFE
+{
+    DisContField f;
+    std::string upwind;
+    double svvCoeff = 0, svvCutoff = 0.5;
+    bool trace = false;
+
+    EulerCFE(int ne, int P, double a, double b, bool per, std::string up)
+        : f(ne, P, a, b, per), upwind(up) {}
+
+    static double pressure(double r, double ru, double E) { return (GAMMA - 1) * (E - 0.5 * ru * ru / r); }
+
+    // GetFluxVector: F(U) at every quadrature point
+    Field GetFluxVector(const Field &amp;U) const
+    {
+        Field F = U;
+        for (int e = 0; e &lt; f.ne; ++e)
+            for (int q = 0; q &lt; f.exp.nq; ++q)
+            {
+                double r = U[0][e][q], ru = U[1][e][q], E = U[2][e][q], u = ru / r, p = pressure(r, ru, E);
+                F[0][e][q] = ru; F[1][e][q] = ru * u + p; F[2][e][q] = u * (E + p);
+            }
+        return F;
+    }
+    // RiemannSolver::Solve on the trace (1D: normal = +x, no rotation needed)
+    void RiemannSolve(const std::vector&lt;Vec&gt; &amp;Fwd, const std::vector&lt;Vec&gt; &amp;Bwd, std::vector&lt;Vec&gt; &amp;Fn) const
+    {
+        int nt = Fwd[0].size();
+        Fn.assign(3, Vec(nt, 0));
+        for (int k = 0; k &lt; nt; ++k)
+        {
+            double L[3] = {Fwd[0][k], Fwd[1][k], Fwd[2][k]}, R[3] = {Bwd[0][k], Bwd[1][k], Bwd[2][k]};
+            double uL = L[1] / L[0], pL = pressure(L[0], L[1], L[2]), cL = std::sqrt(GAMMA * pL / L[0]);
+            double uR = R[1] / R[0], pR = pressure(R[0], R[1], R[2]), cR = std::sqrt(GAMMA * pR / R[0]);
+            double FL[3] = {L[1], L[1] * uL + pL, uL * (L[2] + pL)};
+            double FR[3] = {R[1], R[1] * uR + pR, uR * (R[2] + pR)};
+            if (upwind == &quot;LaxFriedrichs&quot;)
+            {
+                double lam = std::max(std::abs(uL) + cL, std::abs(uR) + cR);
+                for (int i = 0; i &lt; 3; ++i) Fn[i][k] = 0.5 * (FL[i] + FR[i]) - 0.5 * lam * (R[i] - L[i]);
+                continue;
+            }
+            // Roe: F = (FL+FR)/2 - 1/2 sum |lambda_j| alpha_j r_j   (K&amp;S App. E characteristic split)
+            double sL = std::sqrt(L[0]), sR = std::sqrt(R[0]);
+            double u = (sL * uL + sR * uR) / (sL + sR);
+            double H = (sL * (L[2] + pL) / L[0] + sR * (R[2] + pR) / R[0]) / (sL + sR);
+            double c = std::sqrt((GAMMA - 1) * (H - 0.5 * u * u));
+            double dr = R[0] - L[0], du = uR - uL, dp = pR - pL, rho = sL * sR;
+            double a1 = (dp - rho * c * du) / (2 * c * c), a2 = dr - dp / (c * c), a3 = (dp + rho * c * du) / (2 * c * c);
+            double l1 = std::abs(u - c), l2 = std::abs(u), l3 = std::abs(u + c);
+            double r1[3] = {1, u - c, H - u * c}, r2[3] = {1, u, 0.5 * u * u}, r3[3] = {1, u + c, H + u * c};
+            for (int i = 0; i &lt; 3; ++i)
+                Fn[i][k] = 0.5 * (FL[i] + FR[i]) - 0.5 * (l1 * a1 * r1[i] + l2 * a2 * r2[i] + l3 * a3 * r3[i]);
+        }
+    }
+    void print(const char *name, const Vec &amp;v) const
+    {
+        if (!trace) return;
+        std::printf(&quot;%-34s&quot;, name);
+        for (double x : v) std::printf(&quot; %10.6f&quot;, x);
+        std::printf(&quot;\n&quot;);
+    }
+    // AdvectionWeakDG::Advect -&gt; returns div(F) in weak DG form, in physical space
+    Field DoAdvection(const Field &amp;U) const
+    {
+        int nv = 3, ne = f.ne;
+        Field F = GetFluxVector(U);                                       // (1) volume flux
+        std::vector&lt;std::vector&lt;Vec&gt;&gt; c(nv, std::vector&lt;Vec&gt;(ne));
+        for (int i = 0; i &lt; nv; ++i)
+            for (int e = 0; e &lt; ne; ++e) c[i][e] = f.exp.IProductWRTDerivBase(F[i][e]);   // (2)
+        std::vector&lt;Vec&gt; Fwd(nv), Bwd(nv), Fn;
+        for (int i = 0; i &lt; nv; ++i) f.GetFwdBwdTracePhys(U[i], Fwd[i], Bwd[i]);         // (3)
+        RiemannSolve(Fwd, Bwd, Fn);                                                     // (4)
+        if (trace)
+        {
+            for (int e = 0; e &lt; ne; ++e) { print(&quot;rho phys, elmt&quot;, U[0][e]); }
+            for (int e = 0; e &lt; ne; ++e) print(&quot;F_rho = rho u at quad pts&quot;, F[0][e]);
+            for (int e = 0; e &lt; ne; ++e) print(&quot;IProductWRTDerivBase(F_rho)&quot;, c[0][e]);
+            print(&quot;Fwd rho (trace)&quot;, Fwd[0]); print(&quot;Bwd rho (trace)&quot;, Bwd[0]); print(&quot;Fn rho (Riemann)&quot;, Fn[0]);
+        }
+        for (int i = 0; i &lt; nv; ++i)
+            for (int e = 0; e &lt; ne; ++e) for (double &amp;x : c[i][e]) x = -x;                // (5) Neg
+        for (int i = 0; i &lt; nv; ++i) f.AddTraceIntegral(Fn[i], c[i]);                   // (6)
+        if (trace) for (int e = 0; e &lt; ne; ++e) print(&quot;-IProd + AddTraceIntegral&quot;, c[0][e]);
+        Field out(nv, std::vector&lt;Vec&gt;(ne));
+        for (int i = 0; i &lt; nv; ++i)
+            for (int e = 0; e &lt; ne; ++e)
+                out[i][e] = f.exp.BwdTrans(f.exp.MultiplyByElmtInvMass(c[i][e]));        // (7)(8)
+        if (trace) for (int e = 0; e &lt; ne; ++e) print(&quot;div F after InvMass + BwdTrans&quot;, out[0][e]);
+        return out;
+    }
+
+    // Orthonormal-Legendre modal filter Q applied element by element (SVV kernel)
+    Vec ApplyKernel(const Vec &amp;u) const
+    {
+        int Q = f.exp.nq, P = f.exp.ncoeffs - 1, M = int(svvCutoff * P);
+        Vec out(Q, 0);
+        for (int k = 0; k &lt;= P; ++k)
+        {
+            if (k &lt;= M) continue;
+            double kern = std::exp(-double((k - P) * (k - P)) / double((k - M) * (k - M)));
+            double uk = 0;
+            for (int q = 0; q &lt; Q; ++q) uk += f.exp.w[q] * Jacobi(k, 0, 0, f.exp.z[q]) * u[q];
+            uk *= (2 * k + 1) / 2.0;
+            for (int q = 0; q &lt; Q; ++q) out[q] += kern * uk * Jacobi(k, 0, 0, f.exp.z[q]);
+        }
+        return out;
+    }
+    // weak derivative with a central trace value (LDG/BR1 first step)
+    std::vector&lt;Vec&gt; WeakDeriv(const std::vector&lt;Vec&gt; &amp;u, bool zeroWallFlux = false) const
+    {
+        int ne = f.ne;
+        Vec Fwd, Bwd; f.GetFwdBwdTracePhys(u, Fwd, Bwd);
+        Vec avg(Fwd.size()); for (size_t k = 0; k &lt; avg.size(); ++k) avg[k] = 0.5 * (Fwd[k] + Bwd[k]);
+        if (zeroWallFlux &amp;&amp; !f.periodic) { avg[0] = 0; avg[ne] = 0; }   // no SVV flux through the domain ends
+        std::vector&lt;Vec&gt; c(ne);
+        for (int e = 0; e &lt; ne; ++e) { c[e] = f.exp.IProductWRTDerivBase(u[e]); for (double &amp;x : c[e]) x = -x; }
+        f.AddTraceIntegral(avg, c);
+        std::vector&lt;Vec&gt; q(ne);
+        for (int e = 0; e &lt; ne; ++e) q[e] = f.exp.BwdTrans(f.exp.MultiplyByElmtInvMass(c[e]));
+        return q;
+    }
+    // SVV term d/dx( eps Q[dU/dx] ), eps = SVVDiffCoeff * h/P * lambda_max
+    Field DoSVV(const Field &amp;U, double lam) const
+    {
+        Field out(3, std::vector&lt;Vec&gt;(f.ne));
+        double eps = svvCoeff * f.h / (f.exp.ncoeffs - 1) * lam;
+        for (int i = 0; i &lt; 3; ++i)
+        {
+            std::vector&lt;Vec&gt; q = WeakDeriv(U[i]);
+            for (int e = 0; e &lt; f.ne; ++e) { q[e] = ApplyKernel(q[e]); for (double &amp;x : q[e]) x *= eps; }
+            out[i] = WeakDeriv(q, true);
+        }
+        return out;
+    }
+    double MaxSpeed(const Field &amp;U) const
+    {
+        double lam = 0;
+        for (int e = 0; e &lt; f.ne; ++e)
+            for (int q = 0; q &lt; f.exp.nq; ++q)
+            {
+                double r = U[0][e][q], u = U[1][e][q] / r, p = pressure(r, U[1][e][q], U[2][e][q]);
+                lam = std::max(lam, std::abs(u) + std::sqrt(GAMMA * std::max(p, 1e-14) / r));
+            }
+        return lam;
+    }
+    // CompressibleFlowSystem::DoOdeRhs
+    Field DoOdeRhs(const Field &amp;U) const
+    {
+        Field out = DoAdvection(U);
+        for (auto &amp;v : out) for (auto &amp;e : v) for (double &amp;x : e) x = -x;               // Vmath::Neg
+        if (svvCoeff &gt; 0)
+        {
+            Field s = DoSVV(U, MaxSpeed(U));
+            for (int i = 0; i &lt; 3; ++i) for (int e = 0; e &lt; f.ne; ++e)
+                for (int q = 0; q &lt; f.exp.nq; ++q) out[i][e][q] += s[i][e][q];
+        }
+        if (trace) for (int e = 0; e &lt; f.ne; ++e) print(&quot;d rho/dt = DoOdeRhs&quot;, out[0][e]);
+        return out;
+    }
+    // DoOdeProjection: DG keeps physical values as they are (BCs live in the trace here)
+    Field DoOdeProjection(const Field &amp;U) const { return U; }
+
+    void RK4(Field &amp;U, double dt) const
+    {
+        auto axpy = [](const Field &amp;a, const Field &amp;b, double s) {
+            Field r = a;
+            for (size_t i = 0; i &lt; r.size(); ++i) for (size_t e = 0; e &lt; r[i].size(); ++e)
+                for (size_t q = 0; q &lt; r[i][e].size(); ++q) r[i][e][q] += s * b[i][e][q];
+            return r; };
+        Field k1 = DoOdeRhs(DoOdeProjection(U));
+        Field k2 = DoOdeRhs(DoOdeProjection(axpy(U, k1, dt / 2)));
+        Field k3 = DoOdeRhs(DoOdeProjection(axpy(U, k2, dt / 2)));
+        Field k4 = DoOdeRhs(DoOdeProjection(axpy(U, k3, dt)));
+        for (size_t i = 0; i &lt; U.size(); ++i) for (size_t e = 0; e &lt; U[i].size(); ++e)
+            for (size_t q = 0; q &lt; U[i][e].size(); ++q)
+                U[i][e][q] += dt / 6 * (k1[i][e][q] + 2 * k2[i][e][q] + 2 * k3[i][e][q] + k4[i][e][q]);
+    }
+    // SetInitialConditions: evaluate, then FwdTrans + BwdTrans (project onto the polynomial space)
+    Field SetInitialConditions(std::function&lt;void(double, double &amp;, double &amp;, double &amp;)&gt; ic) const
+    {
+        Field U(3, std::vector&lt;Vec&gt;(f.ne, Vec(f.exp.nq)));
+        for (int e = 0; e &lt; f.ne; ++e)
+        {
+            for (int q = 0; q &lt; f.exp.nq; ++q)
+            {
+                double r, u, p; ic(f.xq(e, q), r, u, p);
+                U[0][e][q] = r; U[1][e][q] = r * u; U[2][e][q] = p / (GAMMA - 1) + 0.5 * r * u * u;
+            }
+            for (int i = 0; i &lt; 3; ++i) U[i][e] = f.exp.BwdTrans(f.exp.FwdTrans(U[i][e]));
+        }
+        return U;
+    }
+    double GetTimeStep(const Field &amp;U, double cfl) const
+    {
+        int P = f.exp.ncoeffs - 1;
+        double lam = MaxSpeed(U), dt = cfl * f.h / ((2 * P + 1) * lam);
+        double eps = svvCoeff * f.h / P * lam;            // explicit viscous limit for the SVV term
+        if (eps &gt; 0) dt = std::min(dt, cfl * f.h * f.h / (eps * std::pow(P + 1, 4)));
+        return dt;
+    }
+};
+
+int main(int argc, char **argv)
+{
+    std::string mode = argc &gt; 1 ? argv[1] : &quot;trace&quot;;
+    auto wave = [](double x, double &amp;r, double &amp;u, double &amp;p) { r = 1 + 0.2 * std::sin(PI * x); u = 1; p = 1; };
+
+    if (mode == &quot;trace&quot;)                          // one DoOdeRhs, 2 elements, P = 2, Q = 4
+    {
+        EulerCFE s(2, 2, -1, 1, true, &quot;LaxFriedrichs&quot;);
+        s.trace = true;
+        Field U = s.SetInitialConditions(wave);
+        Field R = s.DoOdeRhs(U);
+        for (int e = 0; e &lt; 2; ++e)
+        {
+            Vec ex(s.f.exp.nq);
+            for (int q = 0; q &lt; s.f.exp.nq; ++q) ex[q] = -0.2 * PI * std::cos(PI * s.f.xq(e, q));
+            s.print(&quot;exact -d(rho u)/dx&quot;, ex);
+        }
+        Vec xs; for (int e = 0; e &lt; 2; ++e) for (int q = 0; q &lt; s.f.exp.nq; ++q) xs.push_back(s.f.xq(e, q));
+        s.print(&quot;x (quadrature points)&quot;, xs);
+        return 0;
+    }
+    if (mode == &quot;conv&quot;)                           // smooth density wave, t = 1 (half period)
+    {
+        for (std::string up : {&quot;LaxFriedrichs&quot;, &quot;Roe&quot;})
+            for (int P = 1; P &lt;= 5; ++P)
+            {
+                std::printf(&quot;%-13s P=%d&quot;, up.c_str(), P);
+                for (int ne : {8, 16})
+                {
+                    EulerCFE s(ne, P, -1, 1, true, up);
+                    Field U = s.SetInitialConditions(wave);
+                    double T = 1.0, dt = s.GetTimeStep(U, 0.2);
+                    int n = std::ceil(T / dt); dt = T / n;
+                    for (int k = 0; k &lt; n; ++k) s.RK4(U, dt);
+                    double err = 0;
+                    for (int e = 0; e &lt; ne; ++e) for (int q = 0; q &lt; s.f.exp.nq; ++q)
+                        err = std::max(err, std::abs(U[0][e][q] - (1 + 0.2 * std::sin(PI * (s.f.xq(e, q) - T)))));
+                    std::printf(&quot;  Ne=%2d err=%.3e&quot;, ne, err);
+                }
+                std::printf(&quot;\n&quot;);
+            }
+        return 0;
+    }
+    if (mode == &quot;profile&quot;)                       // rho(x) at t = 0.2 for SVVDiffCoeff = 0.5
+    {
+        auto sod = [](double x, double &amp;r, double &amp;u, double &amp;p) {
+            if (x &lt; 0.5) { r = 1; u = 0; p = 1; } else { r = 0.125; u = 0; p = 0.1; } };
+        EulerCFE s(40, 4, 0, 1, false, &quot;Roe&quot;);
+        s.svvCoeff = 0.5;
+        Field U = s.SetInitialConditions(sod);
+        double t = 0;
+        while (t &lt; 0.2 - 1e-12) { double dt = std::min(s.GetTimeStep(U, 0.1), 0.2 - t); s.RK4(U, dt); t += dt; }
+        for (int e = 0; e &lt; 40; ++e) for (int q = 0; q &lt; s.f.exp.nq; ++q) std::printf(&quot;%.5f %.5f\n&quot;, s.f.xq(e, q), U[0][e][q]);
+        return 0;
+    }
+    if (mode == &quot;sod&quot;)                            // Sod tube, P = 4, 40 elements, t = 0.2
+    {
+        auto sod = [](double x, double &amp;r, double &amp;u, double &amp;p) {
+            if (x &lt; 0.5) { r = 1; u = 0; p = 1; } else { r = 0.125; u = 0; p = 0.1; } };
+        for (double c : {0.0, 0.25, 0.5, 1.0})
+        {
+            EulerCFE s(40, 4, 0, 1, false, &quot;Roe&quot;);
+            s.svvCoeff = c;
+            Field U = s.SetInitialConditions(sod);
+            double t = 0; bool ok = true;
+            while (t &lt; 0.2 - 1e-12)
+            {
+                double dt = std::min(s.GetTimeStep(U, 0.1), 0.2 - t);
+                s.RK4(U, dt); t += dt;
+                for (auto &amp;el : U[0]) for (double r : el) if (!std::isfinite(r) || r &lt;= 0) ok = false;
+                if (!ok) break;
+            }
+            double rmax = 0, rmin = 1e9, tv = 0, prev = U[0][0][0];
+            for (int e = 0; e &lt; 40; ++e) for (int q = 0; q &lt; s.f.exp.nq; ++q)
+            {
+                double r = U[0][e][q];
+                rmax = std::max(rmax, r); rmin = std::min(rmin, r); tv += std::abs(r - prev); prev = r;
+            }
+            if (ok) std::printf(&quot;SVVDiffCoeff=%.2f  t=0.2  max rho=%.4f  min rho=%.4f  TV(rho)=%.4f\n&quot;, c, rmax, rmin, tv);
+            else    std::printf(&quot;SVVDiffCoeff=%.2f  failed (non-finite state) at t=%.4f\n&quot;, c, t);
+        }
+        return 0;
+    }
+}
+</code></pre></details>
+
+<h3>References</h3>
+<ul>
+<li>Nektar++ Developer Guide: ch. 4 (LibUtilities: Section 4.5 Points and Basis, Section 4.12 time integration), ch. 5–9 (StdRegions, SpatialDomains, LocalRegions, Collections, MultiRegions), ch. 15 (CompressibleFlowSolver: eqs. 15.1–15.13, Tables 15.1–15.2, Figs. 15.1–15.2).</li>
+<li>Nektar++ User Guide: ch. 9 (Compressible Flow Solver: Section 9.3 SOLVERINFO, Section 9.4.1 shock capturing, eqs. 9.8–9.11, Section 9.4.3 dealiasing, eq. 9.13); Section 11.3.5 (dealiasing, SVV kernels, GJP).</li>
+<li>Karniadakis &amp; Sherwin, 2nd ed.: Section 2.3–2.4 (expansions, quadrature, aliasing), Section 3.2 (collapsed coordinates), Section 4.1.6 (sum factorisation), Section 6.2.2 (DG, eq. 6.2.9), Section 6.3.1 (time-step restriction, eq. 6.3.2), Section 6.5 (filters, SVV, eq. 6.5.8), Section 10.5.1 (DG for Navier–Stokes, implementation), App. E (characteristic decomposition).</li>
+<li>Persson, P.-O. and Peraire, J. (2006). Sub-cell shock capturing for discontinuous Galerkin methods. AIAA 2006-112. (UG ref. [43])</li>
+<li>Tadmor, E. (1989). Convergence of spectral methods for nonlinear conservation laws. SIAM J. Numer. Anal. 26(1).</li>
+<li>Maday, Y., Ould Kaber, S. M. and Tadmor, E. (1993). Legendre pseudospectral viscosity method for nonlinear conservation laws. SIAM J. Numer. Anal. 30(2).</li>
+<li>Moura, R. C., Sherwin, S. J. and Peiró, J. (2016). Eigensolution analysis of spectral/hp continuous Galerkin approximations to advection–diffusion problems: insights into spectral vanishing viscosity. J. Comput. Phys. 307.</li>
+<li>Mengaldo, G. et al. (2015). Dealiasing techniques for high-order spectral element methods on regular and irregular grids. J. Comput. Phys. 299. (UG ref. [34])</li>
+</ul>
+</main>
+<script>
+function axes(s,W,H,m,xr,yr,xl,yl,xt,yt,logy){const X=v=>m.l+(v-xr[0])/(xr[1]-xr[0])*(W-m.l-m.r),
+ Y=v=>{const a=logy?Math.log10(v):v,lo=logy?Math.log10(yr[0]):yr[0],hi=logy?Math.log10(yr[1]):yr[1];return H-m.b-(a-lo)/(hi-lo)*(H-m.t-m.b)};
+ s.push(`<line x1="${m.l}" x2="${W-m.r}" y1="${H-m.b}" y2="${H-m.b}" stroke="var(--mute)"/><line x1="${m.l}" x2="${m.l}" y1="${m.t}" y2="${H-m.b}" stroke="var(--mute)"/>`);
+ xt.forEach(v=>s.push(`<text x="${X(v)}" y="${H-m.b+16}" fill="var(--mute)" font-size="11" text-anchor="middle">${v}</text>`));
+ yt.forEach(v=>s.push(`<line x1="${m.l}" x2="${W-m.r}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="${m.l-6}" y="${Y(v)+4}" fill="var(--mute)" font-size="11" text-anchor="end">${logy?'1e'+Math.log10(v):v}</text>`));
+ s.push(`<text x="${(W+m.l)/2}" y="${H-4}" fill="var(--mute)" font-size="12" text-anchor="middle">${xl}</text><text x="12" y="${m.t-8}" fill="var(--mute)" font-size="12">${yl}</text>`);return[X,Y]}
+function line(s,X,Y,pts,col,dash,dots=true){s.push(`<path d="${pts.map((p,k)=>(k?'L':'M')+X(p[0]).toFixed(1)+','+Y(p[1]).toFixed(1)).join('')}" fill="none" stroke="${col}" stroke-width="2" ${dash?'stroke-dasharray="5 4"':''}/>`);if(dots)pts.forEach(p=>s.push(`<circle cx="${X(p[0])}" cy="${Y(p[1])}" r="3" fill="${col}"/>`))}
+function lab(s,x,y,t,col){s.push(`<text x="${x}" y="${y}" fill="${col}" font-size="12">${t}</text>`)}
+// layers
+(function(){const L=[['CompressibleFlowSolver','EulerCFE · NavierStokesCFE · CompressibleFlowSystem · CFSBndCond · ArtificialDiffusion','var(--avg)'],
+['SolverUtils','EquationSystem → UnsteadySystem → AdvectionSystem · AdvectionWeakDG · DiffusionLDGNS · Driver','var(--curve)'],
+['MultiRegions','ExpList · DisContField (m_coeffs, m_phys, trace) · AddTraceIntegral · MultiplyByElmtInvMass','var(--curve)'],
+['Collections','batched BwdTrans / IProductWRTBase / PhysDeriv over elements of the same type','var(--curve)'],
+['LocalRegions','SegExp · QuadExp · TriExp … (is-a StdExpansion, has-a Geometry)','var(--curve)'],
+['StdRegions','StdExpansion · Std{Seg,Quad,Tri,Hex,…}Exp · SVVLaplacianFilter · ExponentialFilter','var(--curve)'],
+['SpatialDomains','MeshGraph · Geometry · GeomFactors (Jacobian, metric)','var(--curve)'],
+['LibUtilities','SessionReader · Points · Basis · Managers/NekFactory · TimeIntegrationScheme','var(--curve)']];
+ const s=[],h=50,g=8,x0=20,w=720;L.forEach((r,i)=>{const y=10+i*(h+g);
+  s.push(`<rect x="${x0}" y="${y}" width="${w}" height="${h}" rx="4" fill="var(--panel)" stroke="${r[2]}" stroke-width="1.5"/>`);
+  s.push(`<text x="${x0+12}" y="${y+21}" fill="${r[2]}" font-size="14" font-weight="600">${r[0]}</text>`);
+  s.push(`<text x="${x0+12}" y="${y+40}" fill="var(--fg)" font-size="10.5" font-family="IBM Plex Mono, monospace">${r[1]}</text>`)});
+ document.getElementById('figlayers').innerHTML=s.join('')})();
+// convergence
+(function(){const s=[],W=720,H=300,m={l:56,r:20,t:24,b:34};
+ const [X,Y]=axes(s,W,H,m,[0.5,5.5],[1e-9,1e-1],'P','max error (density)',[1,2,3,4,5],[1e-9,1e-7,1e-5,1e-3,1e-1],true);
+ const lf8=[1.263e-2,1.931e-3,6.847e-5,5.074e-6,1.099e-7],lf16=[3.526e-3,2.923e-4,4.121e-6,1.874e-7,1.648e-9],r8=[1.413e-2,1.511e-3,8.615e-5,3.775e-6,1.319e-7],r16=[4.451e-3,1.989e-4,5.515e-6,1.251e-7,2.163e-9];
+ const pts=a=>a.map((v,i)=>[i+1,v]);line(s,X,Y,pts(lf8),'var(--curve)');line(s,X,Y,pts(lf16),'var(--curve)',true);line(s,X,Y,pts(r8),'var(--avg)');line(s,X,Y,pts(r16),'var(--avg)',true);
+ lab(s,W-m.r-190,m.t+14,'Lax–Friedrichs, 8 / 16 (dashed)','var(--curve)');lab(s,W-m.r-190,m.t+30,'Roe, 8 / 16 (dashed)','var(--avg)');
+ document.getElementById('figconv').innerHTML=s.join('')})();
+// sensor
+(function(){const s=[],W=720,H=230,m={l:56,r:20,t:24,b:34};
+ const [X,Y]=axes(s,W,H,m,[-7,0],[0,1],'s_e','S_ε',[-7,-6,-5,-4,-3,-2,-1,0],[0,0.5,1],false);
+ [[2,'var(--node)'],[4,'var(--curve)'],[8,'var(--avg)']].forEach(([p,c],k)=>{const s0=-1.3-4.25*Math.log10(p),K=0.2,pts=[];
+  for(let i=0;i<=400;i++){const se=-7+7*i/400;let v=se<s0-K?0:se>s0+K?1:0.5*(1+Math.sin(Math.PI*(se-s0)/(2*K)));pts.push([se,v])}
+  line(s,X,Y,pts,c,false,false);lab(s,W-m.r-70,m.t+14+16*k,'P = '+p,c)});
+ document.getElementById('figsensor').innerHTML=s.join('')})();
+// kernel
+(function(){const s=[],W=720,H=230,m={l:56,r:20,t:24,b:34};
+ const [X,Y]=axes(s,W,H,m,[0,1],[0,1],'k/P','Q̂_k',[0,0.25,0.5,0.75,1],[0,0.5,1],false);
+ [[4,'var(--node)'],[8,'var(--curve)'],[16,'var(--avg)']].forEach(([P,c],j)=>{const M=Math.floor(0.5*P),pts=[];
+  for(let k=0;k<=P;k++)pts.push([k/P,k<=M?0:Math.exp(-((k-P)*(k-P))/((k-M)*(k-M)))]);line(s,X,Y,pts,c);lab(s,m.l+12,m.t+14+16*j,'P = '+P,c)});
+ document.getElementById('figkernel').innerHTML=s.join('')})();
+// sod
+(function(){const D=[[0.0, 1.0003], [0.0029, 1.0003], [0.0089, 1.0003], [0.0161, 1.0003], [0.0221, 1.0002], [0.025, 1.0002], [0.025, 1.0002], [0.0279, 1.0002], [0.0339, 1.0002], [0.0411, 1.0002], [0.0471, 1.0002], [0.05, 1.0002], [0.05, 1.0002], [0.0529, 1.0002], [0.0589, 1.0001], [0.0661, 1.0001], [0.0721, 1.0001], [0.075, 1.0001], [0.075, 1.0001], [0.0779, 1.0001], [0.0839, 1.0001], [0.0911, 1.0001], [0.0971, 1.0001], [0.1, 1.0001], [0.1, 1.0001], [0.1029, 1.0001], [0.1089, 1.0], [0.1161, 1.0], [0.1221, 1.0001], [0.125, 1.0001], [0.125, 1.0001], [0.1279, 1.0], [0.1339, 1.0], [0.1411, 1.0001], [0.1471, 1.0001], [0.15, 1.0001], [0.15, 1.0001], [0.1529, 0.9999], [0.1589, 0.9999], [0.1661, 1.0002], [0.1721, 1.0003], [0.175, 1.0001], [0.175, 1.0], [0.1779, 0.9995], [0.1839, 0.9996], [0.1911, 1.0008], [0.1971, 1.0009], [0.2, 1.0], [0.2, 0.9999], [0.2029, 0.9982], [0.2089, 0.9986], [0.2161, 1.0023], [0.2221, 1.0036], [0.225, 1.002], [0.225, 1.0017], [0.2279, 0.9972], [0.2339, 0.9946], [0.2411, 1.0013], [0.2471, 1.01], [0.25, 1.0128], [0.25, 1.0123], [0.2529, 1.0074], [0.2589, 0.9949], [0.2661, 0.9756], [0.2721, 0.9578], [0.275, 0.9501], [0.275, 0.9498], [0.2779, 0.9406], [0.2839, 0.9216], [0.2911, 0.8996], [0.2971, 0.8815], [0.3, 0.8728], [0.3, 0.8728], [0.3029, 0.8638], [0.3089, 0.8461], [0.3161, 0.8253], [0.3221, 0.8079], [0.325, 0.7996], [0.325, 0.7995], [0.3279, 0.7913], [0.3339, 0.7745], [0.3411, 0.7549], [0.3471, 0.7387], [0.35, 0.7309], [0.35, 0.7309], [0.3529, 0.723], [0.3589, 0.7072], [0.3661, 0.6889], [0.3721, 0.6738], [0.375, 0.6664], [0.375, 0.6664], [0.3779, 0.6591], [0.3839, 0.6444], [0.3911, 0.6272], [0.3971, 0.613], [0.4, 0.6062], [0.4, 0.6062], [0.4029, 0.5994], [0.4089, 0.5855], [0.4161, 0.5691], [0.4221, 0.5554], [0.425, 0.5485], [0.425, 0.5486], [0.4279, 0.5417], [0.4339, 0.5281], [0.4411, 0.5125], [0.4471, 0.5001], [0.45, 0.4945], [0.45, 0.4944], [0.4529, 0.4885], [0.4589, 0.4769], [0.4661, 0.4633], [0.4721, 0.4517], [0.475, 0.4457], [0.475, 0.4459], [0.4779, 0.4405], [0.4839, 0.4315], [0.4911, 0.4167], [0.4971, 0.3959], [0.5, 0.3821], [0.5, 0.3823], [0.5029, 0.4206], [0.5089, 0.435], [0.5161, 0.4124], [0.5221, 0.4255], [0.525, 0.4591], [0.525, 0.4584], [0.5279, 0.4326], [0.5339, 0.4148], [0.5411, 0.4251], [0.5471, 0.4343], [0.55, 0.4325], [0.55, 0.4329], [0.5529, 0.4275], [0.5589, 0.4211], [0.5661, 0.4232], [0.5721, 0.4337], [0.575, 0.4415], [0.575, 0.4409], [0.5779, 0.4248], [0.5839, 0.4182], [0.5911, 0.4311], [0.5971, 0.4341], [0.6, 0.4258], [0.6, 0.4261], [0.6029, 0.4191], [0.6089, 0.4203], [0.6161, 0.4314], [0.6221, 0.4344], [0.625, 0.4303], [0.625, 0.43], [0.6279, 0.4207], [0.6339, 0.4183], [0.6411, 0.4284], [0.6471, 0.4296], [0.65, 0.422], [0.65, 0.4224], [0.6529, 0.4221], [0.6589, 0.4315], [0.6661, 0.4395], [0.6721, 0.4258], [0.675, 0.4081], [0.675, 0.4079], [0.6779, 0.4008], [0.6839, 0.36], [0.6911, 0.2959], [0.6971, 0.2538], [0.7, 0.2426], [0.7, 0.2418], [0.7029, 0.2485], [0.7089, 0.2626], [0.7161, 0.2729], [0.7221, 0.2712], [0.725, 0.2662], [0.725, 0.2662], [0.7279, 0.263], [0.7339, 0.2617], [0.7411, 0.2644], [0.7471, 0.2685], [0.75, 0.2714], [0.75, 0.2699], [0.7529, 0.2695], [0.7589, 0.2648], [0.7661, 0.2608], [0.7721, 0.2638], [0.775, 0.268], [0.775, 0.2706], [0.7779, 0.2694], [0.7839, 0.2688], [0.7911, 0.2652], [0.7971, 0.2599], [0.8, 0.2581], [0.8, 0.2535], [0.8029, 0.2655], [0.8089, 0.2726], [0.8161, 0.2631], [0.8221, 0.2626], [0.825, 0.2738], [0.825, 0.2832], [0.8279, 0.2634], [0.8339, 0.2548], [0.8411, 0.2891], [0.8471, 0.2565], [0.85, 0.1677], [0.85, 0.1538], [0.8529, 0.1137], [0.8589, 0.121], [0.8661, 0.137], [0.8721, 0.1182], [0.875, 0.1183], [0.875, 0.1197], [0.8779, 0.1259], [0.8839, 0.1267], [0.8911, 0.1239], [0.8971, 0.1252], [0.9, 0.1259], [0.9, 0.1256], [0.9029, 0.1253], [0.9089, 0.1247], [0.9161, 0.125], [0.9221, 0.1253], [0.925, 0.1246], [0.925, 0.125], [0.9279, 0.1249], [0.9339, 0.1251], [0.9411, 0.1251], [0.9471, 0.1249], [0.95, 0.1252], [0.95, 0.125], [0.9529, 0.1251], [0.9589, 0.1251], [0.9661, 0.1251], [0.9721, 0.1251], [0.975, 0.1251], [0.975, 0.1251], [0.9779, 0.1251], [0.9839, 0.1252], [0.9911, 0.1252], [0.9971, 0.1252], [1.0, 0.1252]],s=[],W=720,H=300,m={l:56,r:20,t:24,b:34};
+ const [X,Y]=axes(s,W,H,m,[0,1],[0,1.1],'x','ρ',[0,0.2,0.4,0.6,0.8,1],[0,0.25,0.5,0.75,1],false);
+ const g=1.4,cL=Math.sqrt(1.4),t=0.2,ps=0.30313,us=0.92745,rL=0.42632,rR=0.26557,sh=1.75216;
+ const cs=Math.sqrt(g*ps/rL),ex=x=>{const xi=(x-0.5)/t;if(xi<-cL)return 1;if(xi<us-cs){const u=2/(g+1)*(cL+xi),c=cL-(g-1)/2*u;return Math.pow(c/cL,2/(g-1))}if(xi<us)return rL;if(xi<sh)return rR;return 0.125};
+ const E=[];for(let i=0;i<=1000;i++){const x=i/1000;E.push([x,ex(x)])}line(s,X,Y,E,'var(--mute)',false,false);
+ D.forEach(p=>s.push(`<circle cx="${X(p[0]).toFixed(1)}" cy="${Y(p[1]).toFixed(1)}" r="2" fill="var(--avg)"/>`));
+ lab(s,W-m.r-170,m.t+14,'exact','var(--mute)');lab(s,W-m.r-170,m.t+30,'DG P=4 + SVV, c = 0.5','var(--avg)');
+ document.getElementById('figsod').innerHTML=s.join('')})();
+addEventListener('load',()=>renderMathInElement(document.body,{output:"mathml",throwOnError:false,delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]}));
+</script>
+
+</body></html>

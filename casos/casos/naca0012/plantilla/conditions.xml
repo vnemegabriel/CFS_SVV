@@ -1,0 +1,103 @@
+<NEKTAR>
+    <!-- Plantilla: render.py reemplaza cada marca entre arrobas con [values] de caso.ini. -->
+
+    <EXPANSIONS>
+        <E COMPOSITE="C[1]" NUMMODES="@nummodes@" TYPE="MODIFIED" FIELDS="rho,rhou,rhov,E" />
+    </EXPANSIONS>
+
+    <CONDITIONS>
+        <PARAMETERS>
+            <P> TimeStep        = 0                           </P>
+            <P> CFL             = @cfl@                       </P>
+            <P> CFLEnd          = @cfl_end@                   </P>
+            <P> CFLGrowth       = @cfl_growth@                </P>
+            <P> FinTime         = 0                           </P>
+            <P> NumSteps        = @steps@                     </P>
+            <P> IO_InfoSteps    = @info_steps@                </P>
+
+            <P> Gamma           = @gamma@                     </P>
+            <P> GasConstant     = @Rgas@                      </P>
+            <P> pInf            = @p@                         </P>
+            <P> rhoInf          = @rho@                       </P>
+            <P> TInf            = pInf/(GasConstant*rhoInf)   </P>
+            <P> cInf            = sqrt(Gamma*GasConstant*TInf)</P>
+            <P> Uinf            = @U@                         </P>
+            <P> Mach            = Uinf/cInf                   </P>
+            <P> alpha           = @alpha@                     </P>
+            <P> uInf            = Uinf*cos(alpha*PI/180)      </P>
+            <P> vInf            = Uinf*sin(alpha*PI/180)      </P>
+            <P> Uref            = Uinf                        </P>
+            <P> Lref            = @lref@                      </P>
+            <P> mu              = @mu@                        </P>
+            <P> Pr              = @Pr@                        </P>
+
+            <P> mu0             = @mu0@                       </P>
+        </PARAMETERS>
+
+        <!-- Estado estacionario: Euler hacia atrás, Newton–Krylov sin matriz. -->
+        <TIMEINTEGRATIONSCHEME>
+            <METHOD> Euler </METHOD>
+            <ORDER> 1 </ORDER>
+            <VARIANT> Backward </VARIANT>
+        </TIMEINTEGRATIONSCHEME>
+
+        <SOLVERINFO>
+            <I PROPERTY="EQType"            VALUE="NavierStokesImplicitCFE" />
+            <I PROPERTY="Projection"        VALUE="DisContinuous"    />
+            <I PROPERTY="AdvectionType"     VALUE="WeakDG"           />
+            <I PROPERTY="DiffusionType"     VALUE="InteriorPenalty"  />
+            <I PROPERTY="UpwindType"        VALUE="@flux@"           />
+            <I PROPERTY="ProblemType"       VALUE="General"          />
+            <I PROPERTY="ViscosityType"     VALUE="Constant"         />
+            <I PROPERTY="ShockCaptureType"  VALUE="@shock@"          />
+            <I PROPERTY="ShockSensorType"   VALUE="Dilatation"       />
+            <I PROPERTY="DucrosSensor"      VALUE="On"               />
+        </SOLVERINFO>
+
+        <VARIABLES>
+            <V ID="0"> rho  </V>
+            <V ID="1"> rhou </V>
+            <V ID="2"> rhov </V>
+            <V ID="3"> E    </V>
+        </VARIABLES>
+
+        <BOUNDARYREGIONS>
+            <B ID="0"> C[5900] </B>
+            <B ID="1"> C[5901] </B>
+        </BOUNDARYREGIONS>
+
+        <BOUNDARYCONDITIONS>
+            <REGION REF="0">
+                <D VAR="rho"  USERDEFINEDTYPE="WallAdiabatic" VALUE="0" />
+                <D VAR="rhou" USERDEFINEDTYPE="WallAdiabatic" VALUE="0" />
+                <D VAR="rhov" USERDEFINEDTYPE="WallAdiabatic" VALUE="0" />
+                <D VAR="E"    USERDEFINEDTYPE="WallAdiabatic" VALUE="0" />
+            </REGION>
+            <REGION REF="1">
+                <D VAR="rho"  USERDEFINEDTYPE="RiemannInvariant" VALUE="rhoInf" />
+                <D VAR="rhou" USERDEFINEDTYPE="RiemannInvariant" VALUE="rhoInf*uInf" />
+                <D VAR="rhov" USERDEFINEDTYPE="RiemannInvariant" VALUE="rhoInf*vInf" />
+                <D VAR="E"    USERDEFINEDTYPE="RiemannInvariant" VALUE="pInf/(Gamma-1) + 0.5*rhoInf*(uInf*uInf + vInf*vInf)" />
+            </REGION>
+        </BOUNDARYCONDITIONS>
+
+        <FUNCTION NAME="InitialConditions">
+            <E VAR="rho"  VALUE="rhoInf" />
+            <E VAR="rhou" VALUE="rhoInf*uInf" />
+            <E VAR="rhov" VALUE="rhoInf*vInf" />
+            <E VAR="E"    VALUE="pInf/(Gamma-1) + 0.5*rhoInf*(uInf*uInf + vInf*vInf)" />
+        </FUNCTION>
+    </CONDITIONS>
+
+    <FILTERS>
+        <FILTER TYPE="Checkpoint">
+            <PARAM NAME="OutputFile"      > naca0012       </PARAM>
+            <PARAM NAME="OutputFrequency" > @chk_steps@    </PARAM>
+        </FILTER>
+        <FILTER TYPE="AeroForces">
+            <PARAM NAME="OutputFile"      > forces         </PARAM>
+            <PARAM NAME="OutputFrequency" > @force_steps@  </PARAM>
+            <PARAM NAME="Boundary"        > B[0]           </PARAM>
+        </FILTER>
+    </FILTERS>
+</NEKTAR>

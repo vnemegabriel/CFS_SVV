@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<NEKTAR>
+    <GEOMETRY DIM="2" SPACE="2">
+        <VERTEX COMPRESSED="B64Z-LittleEndian" BITSIZE="64">eJxtkzlOA0EURD+YHYPZzGZ2QhJLlhzgoHPHjrAsmQhuwhVoAsQ5SBwjkZARkSDyOQLLVPVM/WGSJ82bdlfXb5uVn2yiNJsCe1edn+ez4qfBp37uX1vl78xq7vfbdfUzZC9/P/64jzG+JD/r1t9dq58Dby/y9V+Dh18f6Ofd+uc39Qsgc+McyS+69egh+SVQz5Ulv+zWe18HkavS7wqIc014TvpVsPEe//zlMEo/DZDv8V3afw0coXfMIfl1UHsv8m+oDz7/Joi5Bs6ZfkvzBZ6DvsmekLs71Pzb2k9AP8nvgDr3Iv8uiPlV8u+BuB/hsa/598Eb7Ms50bdA9soe6A9A3jvuQ38I6r0r8h9Z+ckq+Y+d1/+x2Ynzeg/NTp3XOZudOa89mp3/ny/5b8iL2KoA</VERTEX>
+        <EDGE COMPRESSED="B64Z-LittleEndian" BITSIZE="64">eJx1kslSAkEQBQcBZRXZEVGGfUcBAZX//y8unQczoudSkS9qqvu96iT5/2Ui9SFSs5HKl1M/nI/wo5h5T+qnryCmryhmXinyf1nM/5XIvKr6mfssZm5NzLyXUMmZ8+pizmuIybUpnXu0xOTXls79OmJy6krn3j0xebxKx09fTE5voeIXnwMxPt/F+P6Qjv+hGN+pdHIZifE9lk5eEzG+p9LJcSYmj3mo+CXfhZh8l2J8r6ST+1qM74109rEV43snnT3txfj+lM7+vsTkcQgVv+z1KGavJzG+v6WnoZ7F+L5I5x1cxfj+kc77+BXj+0867+YmJo87yfwPCwAA</EDGE>
+        <ELEMENT>
+            <Q COMPRESSED="B64Z-LittleEndian" BITSIZE="64">eJx10UUOw1AAA9Eyp8zMzAz3v1c340UtNZsnTaL8WAmFfq8wRjD6p8cwjgm7r57EFKbtveoZzGLOzlEPMI8FO6+IJSzb9yesV7Bq5yWt17Bu91PWG9hE7Upbb2EbA3u+g13soXZlrfdxgNqVsz7EEWpXYH2ME9SuvPUpzlC79F/muMAlalfR+grXqF0l6xvc4hDL1ne4R+2qWD/gEbVL//+EZ7ygdtWsX/GG2lW3fscHalfD+hNfqF1N62/8oHZ9AdKIDIwA</Q>
+        </ELEMENT>
+        <COMPOSITE>
+            <C ID="1"> Q[0-24] </C>
+            <C ID="100"> E[0,16,27,38,49] </C>
+            <C ID="200"> E[50,52,54,56,58] </C>
+            <C ID="300"> E[59,48,37,26,14] </C>
+            <C ID="400"> E[15,12,9,6,3] </C>
+        </COMPOSITE>
+        <DOMAIN> C[1] </DOMAIN>
+    </GEOMETRY>
+    <Metadata>
+        <Provenance>
+            <GitBranch>refs/heads/master</GitBranch>
+            <GitSHA1>9bd3c63b7e30f5f7fd9fddd65eb11b9413df94b4</GitSHA1>
+            <Hostname>ZBOOK</Hostname>
+            <NektarVersion>5.2.0</NektarVersion>
+            <Timestamp>15-Feb-2022 11:12:54</Timestamp>
+        </Provenance>
+        <NekMeshCommandLine>advDiffErr.msh mesh-25elmnt.xml </NekMeshCommandLine>
+    </Metadata>
+    <EXPANSIONS>
+        <E COMPOSITE="C[1]" NUMMODES="4" TYPE="MODIFIED" FIELDS="u" />
+    </EXPANSIONS>
+</NEKTAR>

@@ -1,0 +1,17 @@
+# Una corrida por línea. Borrar una línea la saca del caso.
+id                                      sesion                        stab
+tubo_AV_Lap_base                        AV_Lap                        base
+tubo_AV_Lap_NS_base                     AV_Lap_NS                     base
+tubo_AV_Phys_Dil_IP_AUSM0_base          AV_Phys_Dil_IP_AUSM0          base
+tubo_AV_Phys_Dil_IP_AUSM1_base          AV_Phys_Dil_IP_AUSM1          base
+tubo_AV_Phys_Dil_IP_AUSM2_base          AV_Phys_Dil_IP_AUSM2          base
+tubo_AV_Phys_Dil_IP_AUSM3_base          AV_Phys_Dil_IP_AUSM3          base
+tubo_AV_Phys_Dil_IP_ExactToro_base      AV_Phys_Dil_IP_ExactToro      base
+tubo_AV_Phys_Dil_IP_HLL_base            AV_Phys_Dil_IP_HLL            base
+tubo_AV_Phys_Dil_IP_HLLC_base           AV_Phys_Dil_IP_HLLC           base
+tubo_AV_Phys_Dil_IP_LaxFriedrichs_base  AV_Phys_Dil_IP_LaxFriedrichs  base
+tubo_AV_Phys_Dil_IP_Roe_base            AV_Phys_Dil_IP_Roe            base
+tubo_AV_Phys_Dil_IP_Impl_base           AV_Phys_Dil_IP_Impl           base
+tubo_AV_Phys_Dil_LDGNS_base             AV_Phys_Dil_LDGNS             base
+tubo_AV_Phys_Mod_IP_base                AV_Phys_Mod_IP                base
+tubo_AV_Phys_Mod_LDGNS_base             AV_Phys_Mod_LDGNS             base

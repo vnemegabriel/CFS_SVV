@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<NEKTAR>  
+    <EXPANSIONS>     
+        <E COMPOSITE="C[1]" NUMMODES="5" TYPE="MODIFIED" FIELDS="u" />
+        <E COMPOSITE="C[2]" NUMMODES="5" TYPE="MODIFIED" FIELDS="u" />
+        <E COMPOSITE="C[3]" NUMMODES="5" TYPE="MODIFIED" FIELDS="u" />
+    </EXPANSIONS>
+    <CONDITIONS>
+        <SOLVERINFO>
+            <I PROPERTY="EQTYPE"                VALUE=""           /> 
+            <I PROPERTY="Projection"            VALUE=""           />
+            <I PROPERTY="TimeIntegrationMethod" VALUE=""           />
+            <I PROPERTY="DiffusionAdvancement"  VALUE=""           />
+            <I PROPERTY="AdvectionAdvancement"  VALUE=""           />
+        </SOLVERINFO>
+        
+        <PARAMETERS>
+            <P> FinTime         =        </P> <!-- Simulation final time -->
+            <P> TimeStep        =        </P> <!-- Time step -->
+            <P> epsilon         =        </P> <!-- Diffusion coefficent   -->
+            <P> IO_InfoSteps    =        </P> <!-- Frequency of printing information for the user -->
+            <P> IO_CheckSteps   =        </P> <!-- Frequency of writing the checkpoints, the results -->
+            <P> advx            =        </P> <!-- x-advection velocity -->
+            <P> advy            =        </P> <!-- y-advection velocity -->
+        </PARAMETERS>
+        
+        <!-- setting the variable -->
+        <VARIABLES>
+            <V ID="0"> u </V>
+        </VARIABLES>
+        
+        <!-- Defining boundary regions -->
+         <BOUNDARYREGIONS>
+            <B ID="0"> C[100] </B>  <!-- Bottom -->
+            <B ID="1"> C[200] </B>  <!-- Right  -->
+            <B ID="2"> C[300] </B>  <!-- Top    -->
+            <B ID="3"> C[400] </B>  <!-- Left   -->
+        </BOUNDARYREGIONS>
+        
+        <BOUNDARYCONDITIONS>
+            <!-- Bottom -->
+            <REGION REF="0">
+                <P VAR="u" VALUE="" />
+            </REGION>
+            <!-- Right -->
+            <REGION REF="1">
+                <P VAR="u" VALUE="" />
+            </REGION>
+            <!-- Top -->
+            <REGION REF="2">
+                <P VAR="u" VALUE="" />
+            </REGION>
+            <!-- Left -->
+            <REGION REF="3">
+                <P VAR="u" VALUE="" />
+            </REGION>
+        </BOUNDARYCONDITIONS>
+        
+        <!-- Defines the intiial  solution. -->
+        <FUNCTION NAME="InitialConditions">
+            <E VAR="u"  VALUE="sin(2*PI*x)*sin(2*PI*y)" />
+        </FUNCTION>
+
+        <!-- Defines the exact solution. -->
+        <FUNCTION NAME="ExactSolution">
+            <E VAR="u"  VALUE="exp(-epsilon*8*PI*PI*FinTime)*sin(2*PI*x)*sin(2*PI*y)" />
+        </FUNCTION>
+    </CONDITIONS>
+</NEKTAR>

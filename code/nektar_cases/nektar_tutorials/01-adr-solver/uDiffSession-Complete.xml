@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<NEKTAR>  
+    <EXPANSIONS>     
+        <E COMPOSITE="C[1]" NUMMODES="5" TYPE="MODIFIED" FIELDS="u" />
+        <E COMPOSITE="C[2]" NUMMODES="5" TYPE="MODIFIED" FIELDS="u" />
+        <E COMPOSITE="C[3]" NUMMODES="5" TYPE="MODIFIED" FIELDS="u" />
+    </EXPANSIONS>
+    <CONDITIONS>
+        <SOLVERINFO>
+            <!-- Defines the equation type. -->
+            <I PROPERTY="EQTYPE"                VALUE="UnsteadyDiffusion" /> 
+            <!-- Add the projection method here. -->
+            <I PROPERTY="Projection"            VALUE="Continuous"        />
+            <!-- Define the time integration method and diffusion advancement here -->
+            <I PROPERTY="TimeIntegrationMethod" VALUE="BackwardEuler"     />
+            <I PROPERTY="DiffusionAdvancement"  VALUE="Implicit"          />
+        </SOLVERINFO>
+        
+        <PARAMETERS>
+            <P> FinTime         = 0.3    </P> <!-- Simulation final time -->
+            <P> TimeStep        = 0.001  </P> <!-- Time step -->
+            <P> epsilon         = 0.05   </P> <!-- Diffusion coefficent   -->
+            <P> IO_InfoSteps    = 5      </P> <!-- Frequency of printing information for the user -->
+            <P> IO_CheckSteps   = 20     </P> <!-- Frequency of writing the checkpoints, the results -->
+        </PARAMETERS>
+        
+        <!-- setting the variable -->
+        <VARIABLES>
+            <V ID="0"> u </V>
+        </VARIABLES>
+        
+        <!-- Defining boundary regions -->
+        <BOUNDARYREGIONS>
+            <B ID="0"> C[200] </B>     <!-- Right  -->
+            <B ID="1"> C[400] </B>     <!-- Left   -->
+            <B ID="2"> C[100,300] </B> <!-- Bottom and top -->
+        </BOUNDARYREGIONS>
+        
+        <BOUNDARYCONDITIONS>
+            <!-- Right: Neumann condition -->
+            <REGION REF="0"> 
+                <D VAR="u"  VALUE="0" />
+            </REGION>
+
+            <!-- Left: Neumann condition -->
+            <REGION REF="1">
+                <D VAR="u"  VALUE="0" />
+            </REGION>
+            
+            <!-- Bottom and top: add a Dirichlet condition here! -->
+            <REGION REF="2">  
+                <D VAR="u"  VALUE="0" />
+            </REGION>
+        </BOUNDARYCONDITIONS>
+        
+        <!-- Defines the intiial  solution. -->
+        <FUNCTION NAME="InitialConditions">
+            <E VAR="u"  VALUE="sin(2*PI*x)*sin(2*PI*y)" />
+        </FUNCTION>
+
+        <!-- Defines the exact solution. -->
+        <FUNCTION NAME="ExactSolution">
+            <E VAR="u"  VALUE="exp(-epsilon*8*PI*PI*FinTime)*sin(2*PI*x)*sin(2*PI*y)" />
+        </FUNCTION>
+    </CONDITIONS>
+</NEKTAR>

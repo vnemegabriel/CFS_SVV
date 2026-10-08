@@ -1,0 +1,7 @@
+caso verificacion   2026-09-15 12:44
+raíces: /home/valne/runs
+ok 8   pendiente 8
+
+notas:
+  - criterios: pendiente 4
+  - costo normalizado vacío en nemepad: falta taubench_s en maquinas.ini

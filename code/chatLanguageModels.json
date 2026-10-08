@@ -1,0 +1,19 @@
+[
+  {
+    "name": "OpenRouter",
+    "vendor": "customendpoint",
+    "apiKey": "${input:openrouterApiKey}",
+    "apiType": "chat-completions",
+    "models": [
+      {
+        "id": "stealth/union-alpha",
+        "name": "Stealth Union Alpha",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "toolCalling": true,
+        "vision": true,
+        "maxInputTokens": 120000,
+        "maxOutputTokens": 16000
+      }
+    ]
+  }
+]

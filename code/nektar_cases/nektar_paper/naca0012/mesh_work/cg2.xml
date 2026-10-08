@@ -1,0 +1,105 @@
+<NEKTAR>
+    <EXPANSIONS>
+        <E COMPOSITE="C[1]" NUMMODES="4" TYPE="MODIFIED" FIELDS="rho,rhou,rhov,E" />
+    </EXPANSIONS>
+
+    <CONDITIONS>
+        <!-- NACA0012 EULER, M = 0.8, alpha = 1.5 deg. Reproduces Fig 4(b) of the
+             Nektar++ 2015 CPC paper (Cantwell et al.). Inviscid: no viscous
+             Nektar++ 2015 CPC paper. Inviscid, slip wall.
+             Wall is the SLIP wall, correct for Euler. -->
+        <PARAMETERS>
+            <P> TimeStep        = 2.0e-08                     </P>
+            <!-- LocalTimeStep + CFL was tried (CFL 0.2/0.1/0.05/0.02) and diverged
+                 on the impulsive start every time. Fixed dt below is measured:
+                 4e-7 NaN, 2e-7 clean over 3000 steps. -->
+            <P> FinTime         = 0                           </P>
+            <P> NumSteps        = 300                       </P>
+            <P> IO_InfoSteps    = 150                        </P>
+
+            <P> Gamma           = 1.4                         </P>
+            <P> GasConstant     = 287.058                     </P>
+            <P> pInf            = 101325                      </P>
+            <P> rhoInf          = 1.225                       </P>
+            <P> TInf            = pInf/(GasConstant*rhoInf)   </P>
+            <P> Mach            = 0.8                         </P>
+            <P> cInf            = sqrt(Gamma*GasConstant*TInf)</P>
+            <P> alpha           = 1.5                         </P>
+            <P> uInf            = Mach*cInf*cos(alpha*PI/180) </P>
+            <P> vInf            = Mach*cInf*sin(alpha*PI/180) </P>
+            <P> Uref            = Mach*cInf                   </P>
+            <P> Lref            = 1.0                         </P>
+
+            <!-- Viscosity set from the target Reynolds number: mu = rho*U*L/Re -->
+            <P> Reynolds        = 500                         </P>
+            <P> mu              = rhoInf*Uref*Lref/Reynolds   </P>
+            <P> Pr              = 0.72                        </P>
+
+            <!-- Physical artificial viscosity (shock capturing) -->
+            <P> mu0             = 1.0                         </P>
+            <P> SensorOffset    = 1                           </P>
+            <P> Skappa          = -2.0                        </P>
+            <P> Kappa           = 0.5                         </P>
+        </PARAMETERS>
+
+        <TIMEINTEGRATIONSCHEME>
+            <METHOD> RungeKutta </METHOD>
+            <ORDER> 4 </ORDER>
+        </TIMEINTEGRATIONSCHEME>
+
+        <SOLVERINFO>
+            <I PROPERTY="EQType"            VALUE="EulerCFE"         />
+            <I PROPERTY="Projection"        VALUE="DisContinuous"    />
+            <I PROPERTY="AdvectionType"     VALUE="WeakDG"           />
+            <I PROPERTY="UpwindType"        VALUE="HLLC"             />
+            <I PROPERTY="ProblemType"       VALUE="General"          />
+            <I PROPERTY="ShockCaptureType"  VALUE="Off"        />
+        </SOLVERINFO>
+
+        <VARIABLES>
+            <V ID="0"> rho  </V>
+            <V ID="1"> rhou </V>
+            <V ID="2"> rhov </V>
+            <V ID="3"> E    </V>
+        </VARIABLES>
+
+        <BOUNDARYREGIONS>
+            <B ID="0"> C[5900] </B>   <!-- aerofoil -->
+            <B ID="1"> C[5901] </B>   <!-- farfield, 15 chords -->
+        </BOUNDARYREGIONS>
+
+        <BOUNDARYCONDITIONS>
+            <REGION REF="0">
+                <D VAR="rho"  USERDEFINEDTYPE="Wall" VALUE="0" />
+                <D VAR="rhou" USERDEFINEDTYPE="Wall" VALUE="0" />
+                <D VAR="rhov" USERDEFINEDTYPE="Wall" VALUE="0" />
+                <D VAR="E"    USERDEFINEDTYPE="Wall" VALUE="0" />
+            </REGION>
+            <REGION REF="1">
+                <D VAR="rho"  USERDEFINEDTYPE="RiemannInvariant" VALUE="rhoInf" />
+                <D VAR="rhou" USERDEFINEDTYPE="RiemannInvariant" VALUE="rhoInf*uInf" />
+                <D VAR="rhov" USERDEFINEDTYPE="RiemannInvariant" VALUE="rhoInf*vInf" />
+                <D VAR="E"    USERDEFINEDTYPE="RiemannInvariant" VALUE="pInf/(Gamma-1) + 0.5*rhoInf*(uInf*uInf + vInf*vInf)" />
+            </REGION>
+        </BOUNDARYCONDITIONS>
+
+        <FUNCTION NAME="InitialConditions">
+            <E VAR="rho"  VALUE="rhoInf" />
+            <E VAR="rhou" VALUE="rhoInf*uInf" />
+            <E VAR="rhov" VALUE="rhoInf*vInf" />
+            <E VAR="E"    VALUE="pInf/(Gamma-1) + 0.5*rhoInf*(uInf*uInf + vInf*vInf)" />
+        </FUNCTION>
+    </CONDITIONS>
+
+    <FILTERS>
+        <FILTER TYPE="Checkpoint">
+            <PARAM NAME="OutputFile"      > naca0012 </PARAM>
+            <PARAM NAME="OutputFrequency" > 4000    </PARAM>
+        </FILTER>
+        <FILTER TYPE="AeroForces">
+            <PARAM NAME="OutputFile"      > forces   </PARAM>
+            <PARAM NAME="OutputFrequency" > 200      </PARAM>
+            <PARAM NAME="Boundary"        > B[0]     </PARAM>
+        </FILTER>
+    </FILTERS>
+</NEKTAR>

@@ -1,0 +1,8 @@
+# Forces and moments acting on bodies
+# Direction1 = (       1       0       0)
+# Direction2 = (       0       1       0)
+# Moments around (       0       0       0)
+# Boundary regions: 0
+#   Time       F1-press        F1-visc       F1-total       F2-press        F2-visc       F2-total       M3-press        M3-visc       M3-total
+       0  1.1095835e-10  9.9071108e-11  2.1002946e-10  1.1641532e-10 -5.4293762e-11  6.2121559e-11  7.2759576e-11  -5.641925e-11  1.6340326e-11
+   4e-06      11438.331      9743.1826      21181.513       6383.877      3423.0471      9806.9241       2856.445     -3649.5174     -793.07238

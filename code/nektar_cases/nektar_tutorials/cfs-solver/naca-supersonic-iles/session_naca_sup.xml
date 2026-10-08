@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="utf-8"?>
+<NEKTAR xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://www.nektar.info/nektar.xsd">
+
+  <!--
+    Supersonic implicit-LES of a NACA section, M_inf = 1.5.
+    Companion to make_naca_mesh.py; see README.md for the reasoning behind
+    every choice here, and for the resolution/cost analysis.
+
+    Mesh composites (set by the physical group tags in make_naca_mesh.py):
+      C[1] fluid volume   C[2] aerofoil   C[3] far field
+      C[4] outflow        C[5] z = 0      C[6] z = span
+    After running NekMesh, confirm these against the <COMPOSITE> block of
+    naca_sup_3d.xml before trusting the boundary conditions below.
+  -->
+
+  <EXPANSIONS>
+    <!--
+      NUMMODES = P+1.  P = 3 is the usual entry point for DG iLES (implicit LES): enough
+      spectral resolution that numerical dissipation acts only on the
+      smallest resolved scales, cheap enough to iterate on.  Move to
+      NUMMODES=5 (P=4) for production, and re-check the timestep - the
+      explicit stability limit falls roughly as 1/(2P+1).
+    -->
+    <E COMPOSITE="C[1]" NUMMODES="4" FIELDS="rho,rhou,rhov,rhow,E"
+       TYPE="MODIFIED" />
+  </EXPANSIONS>
+
+  <CONDITIONS>
+
+    <SOLVERINFO>
+      <I PROPERTY="EQType"               VALUE="NavierStokesCFE"  />
+      <I PROPERTY="Projection"           VALUE="DisContinuous"    />
+      <I PROPERTY="AdvectionType"        VALUE="WeakDG"           />
+      <I PROPERTY="AdvectionAdvancement" VALUE="Explicit"         />
+      <I PROPERTY="DiffusionType"        VALUE="InteriorPenalty"  />
+      <I PROPERTY="DiffusionAdvancement" VALUE="Explicit"         />
+      <I PROPERTY="ProblemType"          VALUE="General"          />
+      <I PROPERTY="EquationOfState"      VALUE="IdealGas"         />
+      <I PROPERTY="ViscosityType"        VALUE="Constant"         />
+      <I PROPERTY="Driver"               VALUE="Standard"         />
+
+      <!--
+        Riemann solver.  HLLC resolves the contact wave that plain HLL
+        smears, so shear layers and the wake survive; and unlike Roe it
+        needs no entropy fix, which matters once the leading-edge shock
+        strengthens.  Roe or RoeOpt are drop-in alternatives if you want
+        to check sensitivity.
+      -->
+      <I PROPERTY="UpwindType"           VALUE="HLLC"             />
+
+      <!--
+        Shock capturing.  Three coupled choices, and the third is the one
+        that makes shock-capturing compatible with LES at all:
+
+        ShockCaptureType=Physical adds artificial viscosity through the
+        real diffusion operator rather than as a raw Laplacian, so the
+        added dissipation is consistent with the Navier-Stokes terms.
+        This option exists only for the NavierStokes solvers - it is the
+        reason this case cannot be run as EulerCFE.
+
+        ShockSensorType=Dilatation keys the sensor on div(u).  A shock is
+        a region of strong compression, so div(u) << 0 there, whereas the
+        modal sensor keys on expansion-coefficient decay and cannot tell
+        an under-resolved turbulent eddy from a shock.
+
+        DucrosSensor=On multiplies the sensor by
+
+            theta^2 / (theta^2 + omega^2 + eps),   theta = div(u)
+
+        which tends to 1 in compression-dominated regions and to 0 in
+        vorticity-dominated ones.  Without it, artificial viscosity is
+        sprayed over the turbulent boundary layer and wake and quietly
+        kills the very fluctuations the LES exists to resolve.  For
+        shock/turbulence interaction this is not optional.
+      -->
+      <I PROPERTY="ShockCaptureType"     VALUE="Physical"         />
+      <I PROPERTY="ShockSensorType"      VALUE="Dilatation"       />
+      <I PROPERTY="DucrosSensor"         VALUE="On"               />
+    </SOLVERINFO>
+
+    <!--
+      SSP Runge-Kutta, third order.  Strong-stability-preserving schemes
+      keep the TVD property of the spatial operator under time stepping,
+      which is what you want when a shock is present.  Classical RK4 has
+      marginally better dispersion for the turbulence, but no SSP
+      guarantee - only swap it in if the shock is weak and well captured.
+    -->
+    <TIMEINTEGRATIONSCHEME>
+      <METHOD>  RungeKutta </METHOD>
+      <VARIANT> SSP        </VARIANT>
+      <ORDER>   3          </ORDER>
+    </TIMEINTEGRATIONSCHEME>
+
+    <PARAMETERS>
+      <!-- ================= non-dimensionalisation =================
+        rho_inf = U_inf = T_inf = c = 1.  Setting GasConstant to
+        1/(Gamma*Ma^2) makes the free-stream speed of sound
+
+            a_inf = sqrt(Gamma * R * T_inf) = 1/Ma
+
+        so that U_inf/a_inf = Ma exactly.  The single parameter Ma below
+        therefore *is* the free-stream Mach number, and time is measured
+        in convective units c/U_inf.
+      -->
+      <P> Gamma        = 1.4                          </P>
+      <P> Ma           = 1.5                          </P>
+      <P> GasConstant  = 1.0/(Gamma*Ma^2)             </P>
+
+      <P> rhoInf       = 1.0                          </P>
+      <P> TInf         = 1.0                          </P>
+      <P> UInf         = 1.0                          </P>
+      <P> pInf         = rhoInf*GasConstant*TInf      </P>
+
+      <P> AoA          = 2.0/180.0*PI                 </P>
+      <P> uInf         = UInf*cos(AoA)                </P>
+      <P> vInf         = UInf*sin(AoA)                </P>
+      <P> wInf         = 0.0                          </P>
+      <P> EInf         = pInf/(Gamma-1) + 0.5*rhoInf*(uInf*uInf + vInf*vInf + wInf*wInf) </P>
+
+      <!-- ================= viscous scaling =================
+        With c = rho_inf = U_inf = 1, mu = 1/Re_c exactly.  Re is the ONLY
+        knob you need to turn to change the flow regime - everything else
+        below is dimensionless and stays put.
+
+        Read README.md before raising this past ~1e5.  The mesh required
+        for a wall-resolved LES grows like Re^1.86, and at Re = 1e6 this
+        case stops being a workstation problem.
+      -->
+      <P> Re           = 60000.0                      </P>
+      <P> mu           = rhoInf*UInf*1.0/Re           </P>
+      <P> Pr           = 0.72                         </P>
+
+      <!-- ================= artificial viscosity =================
+        mu0 scales the peak artificial viscosity.  Skappa and Kappa are
+        the modal-sensor threshold and half-width; they are inert while
+        ShockSensorType = Dilatation, and are listed only so the switch
+        back to Modal is a one-line change.
+
+        Tuning discipline: start at mu0 = 1.0.  If the shock oscillates,
+        raise it.  If the boundary layer laminarises or the wake goes
+        quiet, lower it - that is artificial viscosity leaking into the
+        turbulence, and it is the classic failure mode of this method.
+        Always output the AV field and look at where it is active.
+      -->
+      <P> mu0          = 1.0                          </P>
+      <P> Skappa       = -1.3                         </P>
+      <P> Kappa        = 0.2                          </P>
+
+      <!-- ================= time stepping =================
+        Explicit DG stability, in convective units:
+
+            dt  <  CFL * h_min / ( (2P+1) * (|u| + a) )
+
+        with |u| + a = 1 + 1/Ma = 1.667 at M = 1.5, and h_min the first
+        ELEMENT height from make_naca_mesh.py.  At P = 3:
+
+            level    h_min      dt limit    suggested
+            coarse   2.0e-3     8.6e-5      5.0e-5
+            medium   5.0e-4     2.1e-5      1.2e-5
+            les      6.0e-5     2.6e-6      1.5e-6
+
+        NumSteps below is a short shakedown run.  A converged LES needs
+        roughly 20 convective times to flush the transient and another 20
+        to gather statistics, i.e. 40/dt steps.
+      -->
+      <P> TimeStep     = 5.0e-5                       </P>
+      <P> NumSteps     = 20000                        </P>
+      <P> IO_InfoSteps = 100                          </P>
+    </PARAMETERS>
+
+    <VARIABLES>
+      <V ID="0"> rho  </V>
+      <V ID="1"> rhou </V>
+      <V ID="2"> rhov </V>
+      <V ID="3"> rhow </V>
+      <V ID="4"> E    </V>
+    </VARIABLES>
+
+    <BOUNDARYREGIONS>
+      <B ID="0"> C[2] </B>   <!-- aerofoil            -->
+      <B ID="1"> C[3] </B>   <!-- far field (inflow)  -->
+      <B ID="2"> C[4] </B>   <!-- outflow             -->
+      <B ID="3"> C[5] </B>   <!-- z = 0               -->
+      <B ID="4"> C[6] </B>   <!-- z = span            -->
+    </BOUNDARYREGIONS>
+
+    <BOUNDARYCONDITIONS>
+
+      <!--
+        Aerofoil: no-slip, adiabatic.  WallAdiabatic imposes zero velocity
+        and zero wall-normal heat flux.  Adiabatic is the right default at
+        M = 1.5: viscous dissipation drives the recovery temperature to
+
+            T_w/T_inf = 1 + r*(Gamma-1)/2 * Ma^2 = 1.40   (r = Pr^(1/3))
+
+        so an isothermal wall at T_inf would impose a 40% temperature
+        deficit that does not exist physically.  Switch to WallViscous
+        with a Twall parameter only if you are modelling a cooled surface.
+      -->
+      <REGION REF="0">
+        <D VAR="rho"  USERDEFINEDTYPE="WallAdiabatic" VALUE="0" />
+        <D VAR="rhou" USERDEFINEDTYPE="WallAdiabatic" VALUE="0" />
+        <D VAR="rhov" USERDEFINEDTYPE="WallAdiabatic" VALUE="0" />
+        <D VAR="rhow" USERDEFINEDTYPE="WallAdiabatic" VALUE="0" />
+        <D VAR="E"    USERDEFINEDTYPE="WallAdiabatic" VALUE="0" />
+      </REGION>
+
+      <!--
+        Far field: full Dirichlet free stream.  This is exact at
+        supersonic inflow - all five characteristics enter the domain, so
+        the state is fully determined and nothing is over-specified.  It
+        is only legitimate because the mesh is sized (see the sizing rule
+        in make_naca_mesh.py) so that the leading-edge shock never reaches
+        this boundary; if it did, the fixed state would reflect it.
+      -->
+      <REGION REF="1">
+        <D VAR="rho"  VALUE="rhoInf"      />
+        <D VAR="rhou" VALUE="rhoInf*uInf" />
+        <D VAR="rhov" VALUE="rhoInf*vInf" />
+        <D VAR="rhow" VALUE="rhoInf*wInf" />
+        <D VAR="E"    VALUE="EInf"        />
+      </REGION>
+
+      <!--
+        Outflow: PressureOutflow tests the wall-normal Mach number pointwise
+        and switches behaviour.  Above 0.99 it extrapolates all five
+        variables - correct, since no characteristic enters a supersonic
+        outflow.  Below 0.99, inside the wake, it imposes the back pressure
+        and extrapolates the rest.  That automatic switching is exactly what
+        this boundary needs: supersonic almost everywhere, subsonic in the
+        viscous wake core.
+      -->
+      <REGION REF="2">
+        <D VAR="rho"  USERDEFINEDTYPE="PressureOutflow" VALUE="0"    />
+        <D VAR="rhou" USERDEFINEDTYPE="PressureOutflow" VALUE="0"    />
+        <D VAR="rhov" USERDEFINEDTYPE="PressureOutflow" VALUE="0"    />
+        <D VAR="rhow" USERDEFINEDTYPE="PressureOutflow" VALUE="0"    />
+        <D VAR="E"    USERDEFINEDTYPE="PressureOutflow" VALUE="pInf" />
+      </REGION>
+
+      <!--
+        Spanwise periodicity.  This pair is what makes the slab a valid
+        turbulence domain: the span must be wide enough to decorrelate,
+        i.e. to hold several near-wall streak spacings (~100 wall units
+        each).  README.md checks that condition for your Reynolds number.
+      -->
+      <REGION REF="3">
+        <P VAR="rho"  VALUE="[4]" />
+        <P VAR="rhou" VALUE="[4]" />
+        <P VAR="rhov" VALUE="[4]" />
+        <P VAR="rhow" VALUE="[4]" />
+        <P VAR="E"    VALUE="[4]" />
+      </REGION>
+      <REGION REF="4">
+        <P VAR="rho"  VALUE="[3]" />
+        <P VAR="rhou" VALUE="[3]" />
+        <P VAR="rhov" VALUE="[3]" />
+        <P VAR="rhow" VALUE="[3]" />
+        <P VAR="E"    VALUE="[3]" />
+      </REGION>
+
+    </BOUNDARYCONDITIONS>
+
+    <!--
+      Uniform free stream.  Two warnings.
+
+      First, starting an explicit run from a uniform field on a
+      wall-resolved mesh means the no-slip condition is applied
+      discontinuously at t = 0; the resulting pressure pulse can trip the
+      shock sensor. Use the two-stage start described in README.md if it
+      does.
+
+      Second, a uniform initial condition contains no disturbance, and a
+      supersonic boundary layer is strongly stabilised by compressibility.
+      Left alone this case may stay laminar indefinitely and never become
+      the LES you asked for. README.md covers how to trip it.
+    -->
+    <FUNCTION NAME="InitialConditions">
+      <E VAR="rho"  VALUE="rhoInf"      />
+      <E VAR="rhou" VALUE="rhoInf*uInf" />
+      <E VAR="rhov" VALUE="rhoInf*vInf" />
+      <E VAR="rhow" VALUE="rhoInf*wInf" />
+      <E VAR="E"    VALUE="EInf"        />
+    </FUNCTION>
+
+  </CONDITIONS>
+
+  <FILTERS>
+    <!-- Restart files.  IO_CheckSteps is deprecated; this is the replacement. -->
+    <FILTER TYPE="Checkpoint">
+      <PARAM NAME="OutputFile">naca_sup</PARAM>
+      <PARAM NAME="OutputFrequency">2000</PARAM>
+    </FILTER>
+
+    <!-- Integrated pressure and viscous forces on the aerofoil: Cl, Cd. -->
+    <FILTER TYPE="AeroForces">
+      <PARAM NAME="OutputFile">naca_sup_forces</PARAM>
+      <PARAM NAME="OutputFrequency">20</PARAM>
+      <PARAM NAME="Boundary">B[0]</PARAM>
+    </FILTER>
+
+    <!--
+      Running time average.  An LES result is a statistic, not a snapshot -
+      any instantaneous field is meaningless on its own.  Start sampling
+      only after the initial transient has convected out (about 20 c/U).
+    -->
+    <FILTER TYPE="AverageFields">
+      <PARAM NAME="OutputFile">naca_sup_avg</PARAM>
+      <PARAM NAME="SampleFrequency">10</PARAM>
+      <PARAM NAME="OutputFrequency">10000</PARAM>
+    </FILTER>
+  </FILTERS>
+
+</NEKTAR>

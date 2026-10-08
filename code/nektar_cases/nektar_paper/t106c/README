@@ -1,0 +1,8 @@
+Flow over a T106C low-pressure turbine blade
+--------------------------------------------
+
+This example simulates compressible flow over a T106C low-pressure turbine
+blade in two dimensions at Re ~= 80,000. This is quite a large simulation but
+can be performed on larger desktop machines. Run it using the command:
+
+   mpirun -n 16 CompressibleFlowSolver t106c.xml.gz conditions.xml

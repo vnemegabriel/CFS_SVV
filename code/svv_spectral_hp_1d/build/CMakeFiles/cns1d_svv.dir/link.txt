@@ -1,0 +1,1 @@
+/usr/bin/c++ -O3 -DNDEBUG CMakeFiles/cns1d_svv.dir/apps/cns1d_svv.cpp.o -o cns1d_svv  libsvvhp.a libpolylib.a

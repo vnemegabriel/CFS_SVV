@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<NEKTAR>
+  <EXPANSIONS>
+    <E COMPOSITE="C[100,101]" NUMMODES="5" FIELDS="u,v,p" TYPE="MODIFIED" />
+  </EXPANSIONS>
+
+  <CONDITIONS>
+    <SOLVERINFO>
+      <I PROPERTY="SolverType"                           VALUE="VelocityCorrectionScheme"   />
+      <I PROPERTY="EQTYPE"                               VALUE="UnsteadyNavierStokes"       />
+      <I PROPERTY="AdvectionForm"                        VALUE="Convective"                 />
+      <I PROPERTY="Projection"                           VALUE="Galerkin"                   />
+      <I PROPERTY="TimeIntegrationMethod"                VALUE="IMEXOrder2"                 />
+      <I PROPERTY="SpectralhpDealiasing"                 VALUE="True"                       />
+      <I PROPERTY="SpectralVanishingViscositySpectralHP" VALUE="True"                       />
+      <I PROPERTY="EvolutionOperator"                    VALUE="Direct"                     /> 
+      <I PROPERTY="Driver"                               VALUE="Standard"                   />
+      <I PROPERTY="GlobalSysSoln"                        VALUE="XxtMultiLevelStaticCond"	  /><!-- XxtMultiLevelStaticCond for parallel, DirectMultiLevelStaticCond for serial-->
+    </SOLVERINFO>
+    <PARAMETERS>
+      <!--General parameters-->
+      <P> TimeStep        = 0.00003      </P>
+      <P> NumSteps        = 2000         </P>
+      <P> IO_CheckSteps   = 10000        </P>
+      <P> IO_InfoSteps    = 500          </P>
+      <P> IO_CFLSteps     = 500          </P>
+      <P> Re              = 100000       </P>
+      <P> Uinf            = 9.18         </P>
+      <P> Vinf            = 0.02328497   </P>
+      <P> Lref            = 0.165        </P>
+      <P> Kinvis          = Uinf*Lref/Re </P>
+      <P> SVVDiffCoeff    = 0.25         </P>
+      <P> SVVCutoffRatio  = 0.7          </P>
+
+      <!--Blasius profile parameters-->
+      <P> x0_dim          = 0.19                     </P> <!--[m], x for inflow boundary-->
+      <P> y2eta           = sqrt(Uinf/Kinvis/x0_dim) </P> <!--1/[m], y*y2eta=eta-->
+      <P> etaMax          = 9.0                      </P> <!--Little oscillation at upper limit 10-->
+      <P> y_etaMax        = etaMax/y2eta             </P> <!--[m]-->
+
+      <P> c0_u            = -7.588793192637297e-07   </P> <!--These coeff are for eta to df/deta, no need to change -->
+      <P> c1_u            = 3.194022625802455e-05    </P>
+      <P> c2_u            = -5.359224544180487e-04   </P>
+      <P> c3_u            = 0.004456471192420        </P>
+      <P> c4_u            = -0.018001543100935       </P>
+      <P> c5_u            = 0.026349808614288        </P>
+      <P> c6_u            = -0.019383436111100       </P>
+      <P> c7_u            = 0.336425284918826        </P>
+
+      <P> c0_v            = -1.973915433977048e-06   </P>
+      <P> c1_v            = 9.301500235002117e-05    </P>
+      <P> c2_v            = -0.001775056424737       </P>
+      <P> c3_v            = 0.017278644240805        </P>
+      <P> c4_v            = -0.086928463802734       </P>
+      <P> c5_v            = 0.185965415918227        </P>
+      <P> c6_v            = -0.010699737058846       </P>
+      <P> c7_v            = 0.054417998357595        </P>
+
+      <!--Disturbance strip parameters-->
+      <P> f               = 96.4                     </P> <!--[Hz]-->
+      <P> Amplitude       = 0.0003                   </P> 
+      <P> x_strip         = 0.25                     </P> <!--[m], left end of strip-->
+      <P> span            = 0.003                    </P> <!--[m], span of strip in x-->
+    </PARAMETERS>
+
+    <VARIABLES>
+      <V ID="0"> u </V>
+      <V ID="1"> v </V>
+      <V ID="2"> p </V>
+    </VARIABLES>
+
+    <BOUNDARYREGIONS>
+      <B ID="0"> C[1] </B> <!-- wall !-->
+      <B ID="1"> C[2] </B> <!-- outlet !-->
+      <B ID="2"> C[4] </B> <!-- inlet !-->
+      <B ID='3'> C[3] </B> <!-- Free stream !-->
+    </BOUNDARYREGIONS>
+    <BOUNDARYCONDITIONS>
+
+      <REGION REF="0"> <!-- wall !-->
+        <D VAR="u" VALUE="0" />
+        <D VAR="v" USERDEFINEDTYPE="TimeDependent" VALUE="Amplitude*sin(2*PI/span*(x-x_strip))*sin(2*PI*96.4*t)*(x>=x_strip)*(x<=(x_strip+span))" />
+        <N VAR="p" USERDEFINEDTYPE="H" VALUE="0" />
+      </REGION>
+
+      <REGION REF="1"> <!-- outlet !-->
+        <N VAR="u" USERDEFINEDTYPE="HOutflow" VALUE="0" />
+        <N VAR="v" USERDEFINEDTYPE="HOutflow" VALUE="0" />
+        <D VAR="p" USERDEFINEDTYPE="HOutflow" VALUE="0" />
+      </REGION>
+
+      <REGION REF="2"> <!-- inlet !-->
+        <D VAR="u" VALUE="0" />
+        <D VAR="v" VALUE="0" />
+        <N VAR="p" USERDEFINEDTYPE="H" VALUE="0" />
+      </REGION>
+      
+      <REGION REF="3"> <!-- Free stream !-->
+        <N VAR="u" VALUE="0" />
+        <N VAR="v" VALUE="0" />
+        <D VAR="p" VALUE="0" />
+      </REGION>
+    </BOUNDARYCONDITIONS>
+
+    <FUNCTION NAME="BaseFlow">
+      <F VAR="u,v,p" FILE="base_P4.fld"   />
+    </FUNCTION>
+    
+    <FUNCTION NAME="InitialConditions">
+      <E VAR="u,v,p" VALUE="0" />
+    </FUNCTION>
+
+  </CONDITIONS>
+</NEKTAR>

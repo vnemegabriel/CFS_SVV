@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<NEKTAR>  
+  <EXPANSIONS>    
+    <E COMPOSITE="C[100,101]" NUMMODES="5" FIELDS="u,v,p" TYPE="MODIFIED" />  
+  </EXPANSIONS>
+  
+  <CONDITIONS>    
+    <SOLVERINFO>
+      <I PROPERTY="SolverType"                           VALUE="VelocityCorrectionScheme"   />
+      <I PROPERTY="EQTYPE"                               VALUE="UnsteadyNavierStokes"       />
+      <I PROPERTY="AdvectionForm"                        VALUE="Convective"                 />
+      <I PROPERTY="Projection"                           VALUE="Galerkin"                   />
+      <I PROPERTY="TimeIntegrationMethod"                VALUE="IMEXOrder2"                 />
+      <I PROPERTY="SpectralhpDealiasing"                 VALUE="True"                       />
+      <I PROPERTY="SpectralVanishingViscositySpectralHP" VALUE="True"                       />  
+      <I PROPERTY="GlobalSysSoln"                        VALUE="XxtMultiLevelStaticCond"    />    
+    </SOLVERINFO>    
+    <PARAMETERS>
+      <!--General parameters-->
+      <P> TimeStep        = 0.00003      </P>
+      <P> NumSteps        = 5000         </P>
+      <P> IO_CheckSteps   = 6000         </P> 
+      <P> IO_InfoSteps    = 1000         </P>
+      <P> IO_CFLSteps     = 1000         </P>
+      <P> Re              =              </P>
+      <P> Uinf            =              </P>
+      <P> Vinf            = 0.02328497   </P>
+      <P> Lref            = 0.165        </P>
+      <P> Kinvis          = Uinf*Lref/Re </P>
+      <P> SVVDiffCoeff    = 0.25         </P>
+      <P> SVVCutoffRatio  = 0.7          </P>
+
+      <!--Blasius profile parameters-->
+      <P> x0_dim          = 0.19                     </P> <!--[m], x for inflow boundary-->  
+      <P> y2eta           = sqrt(Uinf/Kinvis/x0_dim) </P> <!--1/[m], y*y2eta=eta-->  
+      <P> etaMax          = 9.0                      </P> <!--Little oscillation at upper limit 10-->
+      <P> y_etaMax        = etaMax/y2eta             </P> <!--[m]-->
+
+      <P> c0_u            =    </P> <!--These coeff are for eta to df/deta, no need to change -->
+      <P> c1_u            =    </P>
+      <P> c2_u            =    </P>
+      <P> c3_u            =    </P>
+      <P> c4_u            =    </P>
+      <P> c5_u            =    </P>
+      <P> c6_u            =    </P>
+      <P> c7_u            =    </P>
+ 
+      <P> c0_v            =    </P>
+      <P> c1_v            =    </P>
+      <P> c2_v            =    </P>
+      <P> c3_v            =    </P>
+      <P> c4_v            =    </P>
+      <P> c5_v            =    </P>
+      <P> c6_v            =    </P>
+      <P> c7_v            =    </P>
+    </PARAMETERS>
+    
+    <VARIABLES>
+      <V ID="0"> u </V>
+      <V ID="1"> v </V>  
+      <V ID="2"> p </V>
+    </VARIABLES>
+    
+    <BOUNDARYREGIONS>
+      <B ID="0"> C[1] </B>    <!-- wall -->
+      <B ID="1"> C[2] </B>    <!-- outflow -->
+      <B ID="2"> C[4] </B>    <!-- inflow -->      
+      <B ID='3'> C[3] </B>    <!-- Freestream -->    
+    </BOUNDARYREGIONS>    
+    <BOUNDARYCONDITIONS>
+            
+      <REGION REF="0">   <!-- Wall -->
+        <D VAR="u" VALUE="0" />
+        <D VAR="v" VALUE="0" />        
+        <N VAR="p" USERDEFINEDTYPE="H" VALUE="0" />      
+      </REGION>
+            
+      <REGION REF="1">   <!-- Outflow -->
+        <N VAR="u" USERDEFINEDTYPE="HOutflow" VALUE="0" />
+        <N VAR="v" USERDEFINEDTYPE="HOutflow" VALUE="0" />
+        <D VAR="p" USERDEFINEDTYPE="HOutflow" VALUE="0" />
+      </REGION>  
+            
+      <REGION REF="2">  <!-- Inflow -->                  
+        <D VAR="u" VALUE="" />
+        <D VAR="v" VALUE="" />
+        <N VAR="p" USERDEFINEDTYPE="H" VALUE="0" />
+      </REGION>
+
+      <REGION REF="3">  <!-- Freestream -->        
+        <N VAR="u" VALUE="0" />        
+        <N VAR="v" VALUE="0" />        
+        <D VAR="p" VALUE="0" />      
+      </REGION>    
+    </BOUNDARYCONDITIONS>
+        
+    <FUNCTION NAME="InitialConditions">
+      <E VAR="u" VALUE="Uinf" />      
+      <E VAR="v" VALUE="0" />
+      <E VAR="p" VALUE="0" />     
+   </FUNCTION>
+    
+  </CONDITIONS>
+</NEKTAR>
