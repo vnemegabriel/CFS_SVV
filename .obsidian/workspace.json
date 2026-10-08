@@ -1,0 +1,277 @@
+{
+  "main": {
+    "id": "8009bff0e18773a7",
+    "type": "split",
+    "children": [
+      {
+        "id": "32bb5222e47a475f",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "b37c8b4311d27bdb",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "casos/CASOS.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "CASOS"
+            }
+          },
+          {
+            "id": "8961dbe7c338c25f",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "casos/CASOS.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "CASOS"
+            }
+          },
+          {
+            "id": "5f061dc898f16777",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "casos/Aconcagua.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Aconcagua"
+            }
+          }
+        ],
+        "currentTab": 2
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "957ef19a280c15ce",
+    "type": "split",
+    "children": [
+      {
+        "id": "be75a65da6f19869",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "3632a3f46a27ef63",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "2bcfaa5a4b17c95c",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "a3739bb4c70c45d5",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 254.5
+  },
+  "right": {
+    "id": "c1411b53405d6ae8",
+    "type": "split",
+    "children": [
+      {
+        "id": "35a01efd1916a9f3",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "9698e0338392d09f",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks"
+            }
+          },
+          {
+            "id": "9c32a2a79dace159",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links"
+            }
+          },
+          {
+            "id": "420e1ebbc2ec3bf3",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "c2eab18cb8bd2a80",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "a3be447fb4105f68",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "CASOS.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline"
+            }
+          },
+          {
+            "id": "043cf8471d8f18f9",
+            "type": "leaf",
+            "state": {
+              "type": "mermaid-toolbar-view",
+              "state": {},
+              "icon": "lucide-ghost",
+              "title": "mermaid-toolbar-view"
+            }
+          }
+        ],
+        "currentTab": 4
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false,
+      "marp-slides:Show Slide Preview": false,
+      "mermaid-tools:Open Mermaid Toolbar": false
+    }
+  },
+  "active": "5f061dc898f16777",
+  "lastOpenFiles": [
+    "REUNION.md",
+    "MALLADO.md",
+    "casos/Aconcagua.md",
+    "raw/papers/simplified_aerodynamic_heating_of _rockets.pdf",
+    "raw/papers/Unconfirmed 510736.crdownload",
+    "memory_legacy.md",
+    "casos/SVV.md",
+    "raw/CompressibleFlowSolver Execution Sequence.html",
+    "memory/cadena_choque_svv.md",
+    "casos/CASOS.md",
+    "memory/nektar_cfs_sequence.md",
+    "code/cfs1d/cfs1d.cpp",
+    "code/cfs1d",
+    "raw/books/ProgrammersGuide.pdf",
+    "memory/karniadakis_10_1.md",
+    "code/karniadakis/hyperbolic_10_1.cpp",
+    "code/karniadakis",
+    "Untitled",
+    "casos",
+    "code/svv_les_dev/01_INTEGRACION_Y_TESTEO.md",
+    "code/SVV_nektar_implementation_plan.old.md",
+    "code/SVV_nektar_implementation_plan.md",
+    "TODO LIST DOC.md",
+    "code/svv_spectral_hp_1d/docs/01_svv_theory.md",
+    "code/svv_spectral_hp_1d/docs/02_cg_spectral_hp_1d.md",
+    "TESIS_ESTRUCTURA_COMPLETA.md",
+    "PLAN.md",
+    "todoLoQueHayQueHacer.md",
+    "notas.md",
+    "_to_delete/TESIS_ESTRUCTURA_COMPLETA.md",
+    "_to_delete/SVV_nektar_implementation_plan.md",
+    "_to_delete/PLAN.md",
+    "_to_delete/CASOS.md",
+    "_to_delete/DECISIONES.md",
+    "_to_delete/CURVA_COSTO_PRECISION.md",
+    "casos/casos/README.md",
+    "code/svv_spectral_hp_1d/results/burgers_galerkin_vs_split.png",
+    "code/svv_spectral_hp_1d/results/cns_sod_ns2.png",
+    "code/svv_spectral_hp_1d/results/cns_shuosher.png",
+    "code/svv_spectral_hp_1d/results/cns_sod_euler.png",
+    "code/svv_spectral_hp_1d/results/cns_sod_ns.png",
+    "code/svv_spectral_hp_1d/results/cns_entropywave.png",
+    "code/svv_spectral_hp_1d/results/cmp2.png",
+    "code/svv_spectral_hp_1d/results/cmp1.png",
+    "code/svv_spectral_hp_1d/results/burgers_spectra.png",
+    "code/svv_spectral_hp_1d/results/fig_6_27_burgers.png"
+  ]
+}

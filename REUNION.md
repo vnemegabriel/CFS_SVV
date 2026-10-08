@@ -1,0 +1,3 @@
+- Contar una historia (también pensando en la exposición final)
+- Exponer el problema claramente
+- Poner 
