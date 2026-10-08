@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# nk base|dev <comando...> — corre con la instalación indicada de Nektar++.
+set -euo pipefail
+case "${1:-}" in
+  base) P=/opt/nektar++ ;;
+  dev)  P="$HOME/nektar/build-svv/dist" ;;
+  *) echo "uso: nk base|dev <comando...>" >&2; exit 2 ;;
+esac
+shift
+[ -x "$P/bin/CompressibleFlowSolver" ] || { echo "nk: falta $P/bin/CompressibleFlowSolver (¿svv-build?)" >&2; exit 3; }
+export PATH="$P/bin:$PATH" LD_LIBRARY_PATH="$P/lib64:$P/lib:${LD_LIBRARY_PATH:-}"
+exec "$@"

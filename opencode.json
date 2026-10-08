@@ -1,0 +1,79 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": ["/home/valentin-neme/Desktop/TESIS/AGENTS.md"],
+  "model": "opencode/big-pickle",
+  "small_model": "opencode/nemotron-3.5-lightning-free",
+  "permission": {
+    "external_directory": {
+      "/home/valentin-neme/nektar/**": "allow",
+      "/home/valentin-neme/Desktop/TESIS/**": "allow",
+      "*": "deny"
+    }
+  },
+  "agent": {
+    "svv-coder": {
+      "description": "Writes SVV plugin C++ in ~/nektar/solvers/CompressibleFlowSolver",
+      "mode": "primary",
+      "temperature": 0.1,
+      "prompt": "{file:./harness/opencode/svv-coder.md}",
+      "permission": {
+        "edit": {
+          "*": "deny",
+          "solvers/CompressibleFlowSolver/**": "allow"
+        },
+        "bash": {
+          "*": "deny",
+          "git status*": "allow",
+          "git diff*": "allow",
+          "git log*": "allow",
+          "grep *": "allow",
+          "rg *": "allow",
+          "ls *": "allow",
+          "cat *": "allow",
+          "sed -n *": "allow",
+          "/home/valentin-neme/Desktop/TESIS/harness/bin/svv-build*": "allow",
+          "/home/valentin-neme/Desktop/TESIS/harness/bin/svv-test*": "allow"
+        },
+        "webfetch": "deny"
+      }
+    },
+    "svv-scaffold": {
+      "description": "Boilerplate: .tst/.xml tests, CMakeLists, session templates",
+      "mode": "primary",
+      "temperature": 0.1,
+      "prompt": "{file:./harness/opencode/svv-scaffold.md}",
+      "permission": {
+        "edit": {
+          "*": "deny",
+          "solvers/CompressibleFlowSolver/Tests/**": "allow",
+          "solvers/CompressibleFlowSolver/CMakeLists.txt": "allow"
+        },
+        "bash": {
+          "*": "deny",
+          "git diff*": "allow",
+          "ls *": "allow",
+          "cat *": "allow",
+          "grep *": "allow"
+        },
+        "webfetch": "deny"
+      }
+    },
+    "svv-critic": {
+      "description": "RRSI critic: reviews a diff for case leakage, inert machinery and numerical risks. Read-only.",
+      "mode": "primary",
+      "temperature": 0,
+      "prompt": "{file:./harness/opencode/svv-critic.md}",
+      "permission": {
+        "edit": "deny",
+        "bash": {
+          "*": "deny",
+          "git -C /home/valentin-neme/nektar diff*": "allow",
+          "git -C /home/valentin-neme/nektar log*": "allow",
+          "cat *": "allow",
+          "grep *": "allow"
+        },
+        "webfetch": "deny"
+      }
+    }
+  }
+}

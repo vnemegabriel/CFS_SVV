@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "model": "opus",
+  "modelSettings": {
+    "claude-opus-5-5": { "effortLevel": "high" }
+  },
+  "env": {
+    "OMPI_MCA_hwloc_base_use_hwthreads_as_cpus": "1",
+    "OPENCODE_CONFIG": "/home/valentin-neme/Desktop/TESIS/opencode.json"
+  },
+  "permissions": {
+    "additionalDirectories": ["/home/valentin-neme/nektar", "/home/valentin-neme/runs-dev"],
+    "allow": [
+      "Read(//home/valentin-neme/nektar/**)",
+      "Bash(harness/bin/nk *)",
+      "Bash(harness/bin/svv-build*)",
+      "Bash(harness/bin/svv-test*)",
+      "Bash(harness/bin/validar.py historial*)",
+      "Bash(harness/bin/validar.py podar*)",
+      "Bash(harness/bin/validar.py presupuesto*)",
+      "Bash(harness/bin/oc svv-critic *)",
+      "Bash(git -C /home/valentin-neme/nektar status*)",
+      "Bash(git -C /home/valentin-neme/nektar diff*)",
+      "Bash(git -C /home/valentin-neme/nektar log*)",
+      "Bash(git -C /home/valentin-neme/nektar show*)",
+      "Bash(ctest -N*)"
+    ],
+    "ask": [
+      "Bash(harness/bin/validar.py holdout*)",
+      "Bash(git -C /home/valentin-neme/nektar commit*)",
+      "Bash(git -C /home/valentin-neme/nektar switch*)"
+    ],
+    "deny": [
+      "Edit(//opt/nektar++/**)",
+      "Write(//opt/nektar++/**)",
+      "Edit(raw/**)",
+      "Write(raw/**)",
+      "Bash(git push*)",
+      "Bash(sudo *)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      { "hooks": [ { "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/harness/hooks/session_start.sh", "timeout": 15 } ] }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Edit|Write|NotebookEdit",
+        "hooks": [ { "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/harness/hooks/guard.py", "timeout": 10 } ]
+      }
+    ],
+    "Stop": [
+      { "hooks": [ { "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/harness/hooks/stop_gate.sh", "timeout": 1800 } ] }
+    ]
+  }
+}

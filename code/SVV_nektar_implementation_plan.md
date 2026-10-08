@@ -2,7 +2,7 @@
 
 Qué hay que leer, entender y tocar. Sin justificaciones.
 
-Raíz Nektar++ 5.9.0: `/opt/nektar++` (WSL). Rutas relativas a `library/` o `solvers/`.
+Fuente Nektar++ 5.10.0: `~/nektar`, rama `feature/svv-cfs`; base instalada en `/opt/nektar++`, dev en `~/nektar/build-svv/dist` (ver `AGENTS.md`). Rutas relativas a `library/` o `solvers/`.
 
 ---
 

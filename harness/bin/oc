@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# oc <agente> "<tarea>" [archivos...] — delega en opencode (modelos gratuitos) con fallback.
+# Imprime sólo el último mensaje de texto del agente + lista de archivos cambiados en ~/nektar.
+# Log completo de eventos: harness/logs/oc-<agente>-<fecha>.jsonl
+set -uo pipefail
+H="$(cd "$(dirname "$0")/.." && pwd)"; T="$(dirname "$H")"
+AG="${1:?agente}"; TASK="${2:?tarea}"; shift 2
+declare -A MODELS=(
+  [svv-coder]="openrouter/poolside/laguna-s-2.1:free opencode/big-pickle openrouter/cohere/north-mini-code:free"
+  [svv-scaffold]="openrouter/cohere/north-mini-code:free opencode/big-pickle"
+  [svv-critic]="opencode/nemotron-3-ultra-free openrouter/nvidia/nemotron-3-ultra-550b-a55b:free"
+)
+[ -n "${MODELS[$AG]:-}" ] || { echo "oc: agente desconocido '$AG' (${!MODELS[*]})" >&2; exit 2; }
+DIR="$HOME/nektar"; [ "$AG" = svv-critic ] && DIR="$T"
+export OPENCODE_CONFIG="$T/opencode.json"
+FILES=(); for f in "$@"; do FILES+=(-f "$f"); done
+STAMP=$(date +%Y%m%d-%H%M%S); LOG="$H/logs/oc-$AG-$STAMP.jsonl"
+before=$(git -C "$HOME/nektar" status --porcelain | sort)
+for M in ${MODELS[$AG]}; do
+  timeout "${OC_TIMEOUT:-1200}" opencode run --agent "$AG" -m "$M" --dir "$DIR" --format json \
+    --title "$AG $STAMP" "${FILES[@]}" "$TASK" >"$LOG" 2>"$LOG.err"
+  rc=$?
+  out=$(python3 -c '
+import json,sys
+txt=[]
+for l in open(sys.argv[1]):
+    try: e=json.loads(l)
+    except: continue
+    if e.get("type")=="text": txt.append(e["part"].get("text",""))
+print(txt[-1] if txt else "")' "$LOG")
+  if [ $rc -eq 0 ] && [ -n "$out" ]; then
+    echo "[oc $AG via $M]"; echo "$out"
+    after=$(git -C "$HOME/nektar" status --porcelain | sort)
+    comm -13 <(echo "$before") <(echo "$after") | sed 's/^/[cambio] /'
+    exit 0
+  fi
+  echo "[oc] $M falló (rc=$rc), probando el siguiente" >&2
+done
+echo "oc: todos los modelos fallaron; ver $LOG.err" >&2; exit 1

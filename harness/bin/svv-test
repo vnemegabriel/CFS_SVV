@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# svv-test quick|full — ctest sobre dev. Imprime sólo el resumen y los nombres que fallan.
+set -uo pipefail
+B="$HOME/nektar/build-svv"; LOG="$(dirname "$0")/../logs/ctest.log"
+QUICK='CompressibleFlowSolver_(.*SVV.*|Euler1D|IsentropicVortex16_P3|Couette_WeakDG_LDG_SEM|ShockTube_2D_mixedMesh_AV_Lap)$'
+case "${1:-quick}" in
+  quick) R="$QUICK"; E='_par$' ;;
+  full)  R='CompressibleFlowSolver_'; E='_par$' ;;
+  *) echo "uso: svv-test quick|full" >&2; exit 2 ;;
+esac
+export OMPI_MCA_hwloc_base_use_hwthreads_as_cpus=1
+if ctest --test-dir "$B" -R "$R" -E "$E" -j "$(nproc)" --output-on-failure >"$LOG" 2>&1; then
+  grep -E "tests passed" "$LOG"
+else
+  grep -E "tests passed|\(Failed\)|\(SEGFAULT\)|\(Timeout\)|\*\*\*" "$LOG" | head -20 >&2; exit 1
+fi

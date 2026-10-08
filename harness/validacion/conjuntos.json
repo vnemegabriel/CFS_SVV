@@ -1,0 +1,33 @@
+{
+  "_nota": "evolve = se usa para decidir; holdout = sólo hitos, el proponente no ve sus números; transparencia = sesiones originales sin SVV (dev debe igualar a base). Sesiones *_svv.xml se generan con 'oc svv-scaffold' cuando existan las claves SVV. PENDIENTE frena la corrida.",
+  "rrsi": {
+    "k_max": 3, "k_min": 1, "rondas": 12,
+    "lambda_costo": 0.5,
+    "tau_min": 1e-6,
+    "repeticiones_ruido": 3,
+    "ventana_poda": 6,
+    "estancamiento": 3,
+    "tol_transparencia": 1e-10,
+    "regex_filtracion": "shu.?osher|shock.?tube|\\bsod\\b|naca|aconcagua|\\btgv\\b|forward.?step|\\bffs\\b|\\bmach\\s*[=<>]|\\bM(a|inf)?\\s*==\\s*[0-9]"
+  },
+  "transparencia": [
+    {"id": "euler1d",  "sesion": ["~/nektar/solvers/CompressibleFlowSolver/Tests/Euler1D.xml"], "var": "rho"},
+    {"id": "vortice_p3", "sesion": ["~/nektar/solvers/CompressibleFlowSolver/Tests/IsentropicVortex16_P3.xml"], "var": "rho"},
+    {"id": "couette_ldg", "sesion": ["~/nektar/solvers/CompressibleFlowSolver/Tests/Couette_WeakDG_LDG_SEM.xml"], "var": "rho"},
+    {"id": "tubo2d_lap", "sesion": ["~/nektar/solvers/CompressibleFlowSolver/Tests/ShockTube_2D_mixedMesh.xml", "~/nektar/solvers/CompressibleFlowSolver/Tests/ShockTube_2D_mixedMesh_AV_Lap.xml"], "var": "rho"}
+  ],
+  "evolve": [
+    {"id": "tubo2d_svv", "sesion": ["~/nektar/solvers/CompressibleFlowSolver/Tests/ShockTube_2D_mixedMesh.xml", "~/Desktop/TESIS/harness/validacion/sesiones/tubo2d_svv.xml"],
+     "var": "rho", "procs": 2, "params": {"FinTime": "PENDIENTE", "TimeStep": "PENDIENTE"}},
+    {"id": "euler1d_svv", "sesion": ["~/Desktop/TESIS/harness/validacion/sesiones/euler1d_svv.xml"], "var": "rho"},
+    {"id": "vortice_p3_svv", "sesion": ["~/Desktop/TESIS/harness/validacion/sesiones/vortice_p3_svv.xml"], "var": "rho",
+     "_nota": "caso suave: SVV no debe destruir la precisión espectral"}
+  ],
+  "holdout": [
+    {"id": "tubo2d_hllc_svv", "sesion": ["~/nektar/solvers/CompressibleFlowSolver/Tests/ShockTube_2D_mixedMesh.xml", "~/Desktop/TESIS/harness/validacion/sesiones/tubo2d_hllc_svv.xml"],
+     "var": "rho", "procs": 2, "params": {"FinTime": "PENDIENTE", "TimeStep": "PENDIENTE"}},
+    {"id": "vortice_p8_svv", "sesion": ["~/Desktop/TESIS/harness/validacion/sesiones/vortice_p8_svv.xml"], "var": "rho"},
+    {"id": "shu_osher_svv", "sesion": ["~/Desktop/TESIS/harness/validacion/sesiones/shu_osher_svv.xml"], "var": "rho",
+     "_nota": "sin solución exacta: requiere ExactSolution = referencia interpolada (ENO 1600 gdl) antes de usarse"}
+  ]
+}

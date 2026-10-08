@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# svv-build [--configure] — build incremental de dev. Salida recortada: sólo errores.
+set -uo pipefail
+SRC="$HOME/nektar"; B="$SRC/build-svv"; LOG="$(dirname "$0")/../logs/build.log"
+br=$(git -C "$SRC" branch --show-current)
+[ "$br" = feature/svv-cfs ] || { echo "svv-build: ~/nektar está en '$br', no en feature/svv-cfs" >&2; exit 2; }
+if [ ! -f "$B/CMakeCache.txt" ] || [ "${1:-}" = --configure ]; then
+  cmake -S "$SRC" -B "$B" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX="$B/dist" \
+    -DNEKTAR_USE_MPI=ON -DNEKTAR_BUILD_TESTS=ON -DNEKTAR_BUILD_DEMOS=OFF \
+    -DNEKTAR_SOLVER_COMPRESSIBLE_FLOW=ON -DNEKTAR_SOLVER_INCNAVIERSTOKES=OFF \
+    -DNEKTAR_SOLVER_ADR=ON -DNEKTAR_SOLVER_ACOUSTIC=OFF -DNEKTAR_SOLVER_REVIEWSOLUTION=OFF \
+    -DNEKTAR_SOLVER_CARDIAC_EP=OFF -DNEKTAR_SOLVER_DIFFUSION=OFF -DNEKTAR_SOLVER_DUMMY=OFF \
+    -DNEKTAR_SOLVER_ELASTICITY=OFF -DNEKTAR_SOLVER_IMAGE_WARPING=OFF -DNEKTAR_SOLVER_MMF=OFF \
+    -DNEKTAR_SOLVER_PULSEWAVE=OFF -DNEKTAR_SOLVER_SHALLOW_WATER=OFF -DNEKTAR_SOLVER_VORTEXWAVE=OFF \
+    >"$LOG" 2>&1 || { tail -20 "$LOG" >&2; exit 1; }
+fi
+if cmake --build "$B" -j "$(nproc)" >"$LOG" 2>&1 && cmake --install "$B" >>"$LOG" 2>&1; then
+  echo "svv-build: OK"
+else
+  grep -E "error|Error|undefined reference" "$LOG" | grep -v "^--" | head -25 >&2
+  echo "svv-build: FALLA (log completo: harness/logs/build.log)" >&2; exit 1
+fi
